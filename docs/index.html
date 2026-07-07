@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TMDC Optical Spectroscopy — Data Processing Tutorial</title>
+<title>Data Processing 101</title>
 <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
 <style>
@@ -25,12 +25,12 @@
     background: linear-gradient(135deg, #1e1b4b 0%, #4c1d95 60%, #6d28d9 100%);
     color: #fff; padding: 56px 24px 48px;
   }
-  .hero-inner { max-width: 980px; margin: 0 auto; }
+  .hero-inner { max-width: 1000px; margin: 0 auto; }
   .hero h1 { margin: 0 0 10px; font-size: clamp(26px, 4vw, 40px); line-height: 1.2; }
-  .hero p  { margin: 0; max-width: 720px; color: #ddd6fe; font-size: 17px; }
+  .hero p  { margin: 0; max-width: 760px; color: #ddd6fe; font-size: 17px; }
   .hero .pill {
-    display: inline-block; margin-top: 18px; padding: 6px 14px; border-radius: 999px;
-    background: rgba(255,255,255,.14); color: #fff; font-size: 13.5px;
+    display: inline-block; margin-top: 18px; margin-right: 8px; padding: 6px 14px;
+    border-radius: 999px; background: rgba(255,255,255,.14); color: #fff; font-size: 13.5px;
   }
   .hero a.repo {
     display: inline-block; margin: 18px 10px 0 0; color: #fff; text-decoration: none;
@@ -42,30 +42,48 @@
     border-bottom: 1px solid var(--line);
   }
   nav.toc .toc-inner {
-    max-width: 980px; margin: 0 auto; display: flex; gap: 2px; overflow-x: auto; padding: 0 16px;
+    max-width: 1000px; margin: 0 auto; display: flex; gap: 2px; overflow-x: auto; padding: 0 16px;
   }
   nav.toc a {
     flex: none; padding: 12px 12px; color: var(--muted); text-decoration: none; font-size: 13.5px;
     border-bottom: 2px solid transparent; white-space: nowrap;
   }
   nav.toc a:hover { color: var(--accent); border-bottom-color: var(--accent); }
-  main { max-width: 980px; margin: 0 auto; padding: 12px 20px 80px; }
+  main { max-width: 1000px; margin: 0 auto; padding: 12px 20px 80px; }
+  .part-head {
+    margin: 44px 4px 6px; display: flex; align-items: baseline; gap: 14px; scroll-margin-top: 70px;
+  }
+  .part-head .pnum { font-size: 40px; font-weight: 800; color: var(--accent); opacity: .35; }
+  .part-head h2 { margin: 0; font-size: 26px; }
+  .part-head p { margin: 0; color: var(--muted); font-size: 14.5px; }
   section.card {
     background: var(--card); border: 1px solid var(--line); border-radius: 14px;
-    padding: 28px 30px; margin-top: 30px; scroll-margin-top: 70px;
+    padding: 26px 30px; margin-top: 18px; scroll-margin-top: 70px;
   }
-  h2 { margin: 0 0 6px; font-size: 23px; display: flex; align-items: center; gap: 12px; }
-  h2 .num {
-    flex: none; width: 34px; height: 34px; border-radius: 10px; background: var(--accent-soft);
-    color: var(--accent); font-size: 16px; display: grid; place-items: center; font-weight: 700;
+  h3.sub { margin: 0 0 4px; font-size: 19px; color: var(--ink); }
+  h3.sub .tag {
+    display: inline-block; background: var(--accent-soft); color: var(--accent);
+    font-size: 12.5px; font-weight: 700; border-radius: 6px; padding: 2px 9px;
+    margin-right: 9px; vertical-align: 2px;
   }
-  .lede { color: var(--muted); margin: 4px 0 18px; }
+  .lede { color: var(--muted); margin: 6px 0 16px; font-size: 15px; }
+  .lede b, .lede i { color: var(--ink); }
+  .open-q {
+    border-left: 3px solid #f59e0b; background: #fffbeb; padding: 8px 14px;
+    border-radius: 0 8px 8px 0; font-size: 14px; color: #7c5806; margin: 10px 0 14px;
+  }
   .demo { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px 6px; background: #fdfdff; }
-  .controls { display: flex; flex-wrap: wrap; gap: 18px 28px; padding: 4px 6px 10px; align-items: center; }
-  .ctrl { display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: var(--muted); }
-  .ctrl input[type=range] { width: 150px; accent-color: var(--accent); }
-  .ctrl .val { min-width: 64px; font-variant-numeric: tabular-nums; color: var(--ink); font-weight: 600; }
+  .controls { display: flex; flex-wrap: wrap; gap: 14px 26px; padding: 4px 6px 10px; align-items: center; }
+  .ctrl { display: flex; align-items: center; gap: 9px; font-size: 13.5px; color: var(--muted); }
+  .ctrl input[type=range] { width: 140px; accent-color: var(--accent); }
+  .ctrl .val { min-width: 62px; font-variant-numeric: tabular-nums; color: var(--ink); font-weight: 600; }
+  .ctrl select { font: inherit; font-size: 13px; padding: 3px 6px; border: 1px solid var(--line); border-radius: 6px; }
   .ctrl label.chk { display: flex; align-items: center; gap: 7px; cursor: pointer; }
+  .readout {
+    display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 13.5px; color: var(--muted);
+    padding: 2px 6px 10px;
+  }
+  .readout b { color: var(--ink); font-variant-numeric: tabular-nums; }
   .plot { width: 100%; }
   details.code { margin-top: 14px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
   details.code summary {
@@ -75,26 +93,15 @@
   details.code pre { margin: 0; border-radius: 0; font-size: 13px; max-height: 480px; overflow: auto; }
   .filelink { font-size: 13.5px; color: var(--muted); margin-top: 8px; }
   .filelink a { color: var(--accent); }
-  .pipeline { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 20px 0 8px; }
+  .pipeline { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0 8px; }
   .stage {
-    border: 1.5px solid var(--line); border-radius: 12px; padding: 12px 12px; background: #fff;
-    text-align: center; position: relative;
+    border: 1.5px solid var(--line); border-radius: 12px; padding: 14px 14px; background: #fff;
   }
-  .stage b { display: block; color: var(--accent); font-size: 14px; margin-bottom: 4px; }
-  .stage span { font-size: 12.5px; color: var(--muted); line-height: 1.45; display: block; }
-  .stage:not(:last-child)::after {
-    content: "→"; position: absolute; right: -13px; top: 50%; transform: translateY(-50%);
-    color: var(--accent); font-weight: 700; z-index: 2;
-  }
-  table.models { border-collapse: collapse; width: 100%; font-size: 14px; margin-top: 10px; }
-  table.models th, table.models td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
-  table.models th { background: var(--accent-soft); color: var(--ink); }
-  table.models code { background: #f3f4f8; padding: 1px 5px; border-radius: 4px; font-size: 12.5px; }
+  .stage b { display: block; color: var(--accent); font-size: 15px; margin-bottom: 4px; }
+  .stage span { font-size: 13px; color: var(--muted); line-height: 1.5; display: block; }
   footer { text-align: center; color: var(--muted); font-size: 13.5px; padding: 24px; }
   @media (max-width: 760px) {
     .pipeline { grid-template-columns: 1fr; }
-    .stage:not(:last-child)::after { content: "↓"; right: auto; left: 50%; top: auto; bottom: -20px; transform: translateX(-50%); }
-    .pipeline { gap: 22px; }
     section.card { padding: 20px 16px; }
   }
 </style>
@@ -103,150 +110,343 @@
 
 <header class="hero">
   <div class="hero-inner">
-    <h1>TMDC Optical Spectroscopy<br>Data Processing Tutorial</h1>
-    <p>How we go from raw spectrometer files to physics: calibration, preprocessing,
-       bounded model fitting, and interactive visualization — for gated PL, power sweeps,
-       time-resolved PL, transient absorption maps, and exciton-polariton dispersions.</p>
-    <span class="pill">All data on this page is synthetic — generated live in your browser, no measurements included</span><br>
-    <a class="repo" href="https://github.com/moonriver366/tmdc-data-processing-tutorial">View code on GitHub</a>
+    <h1>Data Processing 101</h1>
+    <p>A new sample just landed on the optical table. This is my take on the standard pass to
+       characterize it — from raw spectrometer files to numbers you can trust — with live demos and
+       the Python that goes with them. Not a textbook: comments, corrections and contributions are
+       all welcome, and the open questions are marked as open questions.</p>
+    <span class="pill">every plot on this page is synthetic — generated in your browser, no measurement data</span>
+    <br>
+    <a class="repo" href="https://github.com/moonriver366/data-processing-101">Code &amp; issues on GitHub</a>
   </div>
 </header>
 
 <nav class="toc"><div class="toc-inner">
-  <a href="#pipeline">Pipeline</a>
-  <a href="#s1">1 · PL peaks</a>
-  <a href="#s2">2 · Power dep.</a>
-  <a href="#s3">3 · TRPL</a>
-  <a href="#s4">4 · TA + chirp</a>
-  <a href="#s5">5 · Gate maps</a>
-  <a href="#s6">6 · Polaritons</a>
-  <a href="#s7">7 · Viewer</a>
+  <a href="#start">Start here</a>
+  <a href="#p1">1 · Steady state</a>
+  <a href="#p2">2 · TRPL &amp; imaging</a>
+  <a href="#p3">3 · Transient reflectance</a>
 </div></nav>
 
 <main>
 
-<!-- ================= PIPELINE OVERVIEW ================= -->
-<section class="card" id="pipeline">
-  <h2><span class="num">0</span>The pipeline, conceptually</h2>
-  <p class="lede">Every experiment in the lab — PL, TRPL, TA, reflectance — moves through the same five stages.</p>
+<!-- ======================= START ======================= -->
+<section class="card" id="start">
+  <h3 class="sub">The pass, in order</h3>
+  <p class="lede">Steady state first — it's cheap, it has no time-resolution artifacts to
+     misread, and it tells you where to point everything that comes after. Then time-resolved
+     emission, then pump-probe. Each part leans on the previous one.</p>
   <div class="pipeline">
-    <div class="stage"><b>Load &amp; parse</b><span>.asc / .csv / .txt arrays; sweep metadata encoded in filenames (<code>P1p5uW</code>, <code>Vfm2p5</code>)</span></div>
-    <div class="stage"><b>Calibrate</b><span>pixel → nm → eV (E = 1240/λ); pixel → angle (k-space); wheel angle → power</span></div>
-    <div class="stage"><b>Preprocess</b><span>baseline from signal-free windows; MAD noise floor; NaN-aware smoothing; chirp correction</span></div>
-    <div class="stage"><b>Fit</b><span>bounded least squares against physics models, with SNR/R² quality gates</span></div>
-    <div class="stage"><b>Visualize</b><span>heatmap + crosshair + linecuts + sliders; CSV / GIF export</span></div>
+    <div class="stage"><b>Part 1 — Steady state</b>
+      <span>Read the .asc, calibrate the axes (real space or k-space), reflectance contrast &amp;
+      backgrounds, lineshapes (Lorentzian / Gaussian / Fano + a TMM sanity check), PL and its
+      spatial profile, then sweeps: power / temperature / gate.</span></div>
+    <div class="stage"><b>Part 2 — TRPL &amp; PL imaging</b>
+      <span>TCSPC histograms and the IRF, analytic IRF-convolved fits, spatial profiles from a
+      point scan or a detector array, MSD analysis — and everything that broadens a profile
+      without being transport.</span></div>
+    <div class="stage"><b>Part 3 — Transient reflectance</b>
+      <span>What dR/R actually measures (not always population!), wavelength calibration with
+      filter edges, chirp correction, and the full interactive map analysis: spatial fits,
+      dynamics, MSD → D.</span></div>
   </div>
-  <table class="models">
-    <tr><th>Observable</th><th>Model fitted</th></tr>
-    <tr><td>PL spectrum</td><td>Gaussian / Lorentzian peaks (exciton X⁰ + trion), windowed then global</td></tr>
-    <tr><td>PL vs power</td><td>Hill saturation <code>I = Imax·Pⁿ/(Kⁿ+Pⁿ)</code>; onset via dI/d(log P)</td></tr>
-    <tr><td>TRPL decay</td><td>multi-exponential analytically convolved with Gaussian IRF (erfc form)</td></tr>
-    <tr><td>TA transient</td><td>exponential decays with finite rise; chirp-corrected ΔR/R maps</td></tr>
-    <tr><td>Polariton dispersion</td><td>2×2 coupled oscillator → LP/UP branches, Rabi splitting, Hopfield fractions</td></tr>
-  </table>
+  <p class="lede" style="margin-bottom:0">Rule zero throughout: every pipeline here runs on
+     synthetic data with known ground truth before it ever touches a measurement. If it can't
+     recover what was put in, it doesn't get used.</p>
 </section>
 
-<!-- ================= 1: PL SPECTRUM ================= -->
-<section class="card" id="s1">
-  <h2><span class="num">1</span>PL spectrum: baseline + two-peak fit</h2>
-  <p class="lede">A gated-TMDC PL spectrum has a neutral exciton (X⁰) and a trion peak on a sloped CCD
-     background. We subtract a baseline estimated from signal-free windows, then fit both peaks —
-     each first alone inside a ±window, then globally so overlapping tails are shared. Drag the
-     sliders to change the underlying physics and watch the decomposition.</p>
+<!-- ======================= PART 1 ======================= -->
+<div class="part-head" id="p1"><span class="pnum">1</span>
+  <div><h2>Steady state: linear reflectance &amp; PL</h2>
+  <p>non-time-resolved first — two basic measurements, one file format</p></div>
+</div>
+
+<!-- 1.1 axes -->
+<section class="card" id="s11">
+  <h3 class="sub"><span class="tag">1.1</span>Reading the .asc and calibrating the axes</h3>
+  <p class="lede">The raw file is a matrix: first column wavelength, the rest are pixels along the
+     slit. The spectral axis comes calibrated; the spatial axis is where the thinking happens.
+     <b>Real space:</b> µm/pixel = camera pitch / magnification (f_tube / f_objective) —
+     cross-checked by imaging a diffraction-limited laser spot of known size (~0.51 λ/NA FWHM;
+     the measured spot can only be bigger, so this bounds the calibration).
+     <b>k-space:</b> if the back focal plane is imaged, the edge of the illuminated disk sits
+     exactly at the objective NA, and position is linear in sin θ — so the angle axis stretches
+     toward the edge.</p>
   <div class="demo">
     <div class="controls">
-      <div class="ctrl">trion amplitude <input type="range" id="s1-at" min="0" max="2200" step="20" value="900"><span class="val" id="s1-at-v"></span></div>
-      <div class="ctrl">X⁰ width γ <input type="range" id="s1-gx" min="1.5" max="10" step="0.1" value="4"><span class="val" id="s1-gx-v"></span></div>
-      <div class="ctrl">noise <input type="range" id="s1-nz" min="0" max="3" step="0.1" value="1"><span class="val" id="s1-nz-v"></span></div>
+      <div class="ctrl">objective NA <input type="range" id="cal-na" min="0.3" max="0.95" step="0.01" value="0.8"><span class="val" id="cal-na-v"></span></div>
+      <div class="ctrl">magnification <input type="range" id="cal-mag" min="20" max="150" step="5" value="100"><span class="val" id="cal-mag-v"></span></div>
     </div>
-    <div class="plot" id="s1-plot" style="height:400px"></div>
+    <div class="readout">
+      <span>real space: <b id="cal-umpp"></b> µm/px (16 µm camera pitch)</span>
+      <span>diffraction-limited spot @ 750 nm: <b id="cal-spot"></b> µm FWHM = <b id="cal-spotpx"></b> px</span>
+      <span>k-space edge: <b id="cal-thmax"></b>°</span>
+    </div>
+    <div class="plot" id="cal-plot" style="height:300px"></div>
   </div>
-  <details class="code"><summary>Python — windowed Lorentzian fit with quality gate</summary>
-<pre><code class="language-python">def lorentzian(x, amplitude, center, gamma):
-    """Lorentzian peak: A * g^2 / ((x - c)^2 + g^2). FWHM = 2*gamma."""
-    dx = x - center
-    return amplitude * gamma * gamma / (dx * dx + gamma * gamma)
+  <details class="code"><summary>Python — parse the .asc, both calibrations</summary>
+<pre><code class="language-python">def read_asc(text):
+    rows = []
+    for line in text.splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        rows.append([float(p) for p in line.replace(",", "\t").split()])
+    arr = np.asarray(rows)
+    return arr[:, 0], arr[:, 1:]        # wavelength_nm, (n_wl, n_px) image
 
-def fit_peak_windowed(wl, y, center_guess, window_nm=15.0,
-                      gamma_bounds=(0.4, 15.0), min_snr=2.0):
-    """Fit one Lorentzian inside +/- window_nm around center_guess.
-    Returns None when the fit fails the quality gate."""
-    m = np.abs(wl - center_guess) &lt;= window_nm
-    x, yy = wl[m], y[m]
-    yy = yy - np.percentile(yy, 10)          # local baseline inside window
-    peak = float(np.max(yy))
-    p0 = [peak, x[np.argmax(yy)], 2.0]
-    lo = [0.0, center_guess - window_nm, gamma_bounds[0]]
-    hi = [4.0 * peak, center_guess + window_nm, gamma_bounds[1]]
-    popt, pcov = curve_fit(lorentzian, x, yy, p0=p0, bounds=(lo, hi))
-    snr = popt[0] / max(noise_level_mad(yy), 1e-12)   # MAD noise floor
-    if snr &lt; min_snr:
-        return None                          # gap, not a garbage point
-    return dict(center_nm=popt[1], fwhm_nm=2.0 * popt[2], amplitude=popt[0])</code></pre>
+def real_space_um_per_px(camera_pitch_um=16.0, f_objective_mm=2.0, f_tube_mm=200.0):
+    return camera_pitch_um / (f_tube_mm / f_objective_mm)
+
+def k_space_angle_axis(n_px, edge_lo_px, edge_hi_px, NA=0.8):
+    """BFP disk edge = NA; position is linear in sin(theta), not theta."""
+    center = 0.5 * (edge_lo_px + edge_hi_px)
+    radius = 0.5 * (edge_hi_px - edge_lo_px)
+    sin_theta = np.clip(NA * (np.arange(n_px) - center) / radius, -0.999, 0.999)
+    return np.degrees(np.arcsin(sin_theta))</code></pre>
   </details>
-  <p class="filelink">Full runnable script: <a href="https://github.com/moonriver366/tmdc-data-processing-tutorial/blob/main/examples/01_pl_spectrum_two_peak_fit.py">examples/01_pl_spectrum_two_peak_fit.py</a></p>
+  <p class="filelink">Full script: <a href="https://github.com/moonriver366/data-processing-101/blob/main/examples/1_steady_state/01_reading_asc_and_axis_calibration.py">examples/1_steady_state/01_reading_asc_and_axis_calibration.py</a></p>
 </section>
 
-<!-- ================= 2: POWER DEPENDENCE ================= -->
-<section class="card" id="s2">
-  <h2><span class="num">2</span>Power dependence &amp; saturation</h2>
-  <p class="lede">Integrated PL vs excitation power on log-log axes: a power law I ∝ Pⁿ is a straight
-     line of slope n, and saturation bends it over. We fit a Hill model
-     I&nbsp;=&nbsp;I<sub>max</sub>·Pⁿ/(Kⁿ+Pⁿ) and locate the onset with the derivative dI/d(log₁₀P),
-     which peaks near the saturation power K. Powers are parsed from filenames like
-     <code>PL_P1p5uW_Vf0.asc</code>.</p>
+<!-- 1.2 k or real -->
+<section class="card" id="s12">
+  <h3 class="sub"><span class="tag">1.2</span>Do you need k-space at all?</h3>
+  <p class="lede">One question decides it: does the feature <i>disperse</i> inside the light cone
+     your objective collects? Drag the slider from flat to strongly dispersing. A flat feature
+     (most bare emitters) makes k-space imaging a waste of a measurement — real space tells you
+     more. A bending feature (cavity modes, polaritons, anything with structure vs angle) makes
+     k-space mandatory, because a single-angle spectrum samples an arbitrary point of a curve you
+     can't reconstruct. (The full k-space toolkit — dispersion fitting and friends — is deferred
+     to a future part.)</p>
   <div class="demo">
     <div class="controls">
-      <div class="ctrl">exponent n <input type="range" id="s2-n" min="0.5" max="2" step="0.05" value="1.05"><span class="val" id="s2-n-v"></span></div>
-      <div class="ctrl">saturation K <input type="range" id="s2-k" min="5" max="200" step="5" value="40"><span class="val" id="s2-k-v"></span></div>
+      <div class="ctrl">dispersion within light cone <input type="range" id="disp-c" min="0" max="60" step="1" value="0"><span class="val" id="disp-c-v"></span></div>
     </div>
-    <div class="plot" id="s2-plot" style="height:400px"></div>
+    <div class="plot" id="disp-plot" style="height:340px"></div>
   </div>
-  <details class="code"><summary>Python — filename metadata + Hill fit + dI/dlogP</summary>
-<pre><code class="language-python"># filename convention: p = decimal point, m = minus  ->  P1p5uW = 1.5 uW
-POWER_RE = re.compile(r"P(?P&lt;val&gt;m?\d+p?\d*)(?P&lt;unit&gt;nW|uW|mW|W)")
-UNIT_SCALE = {"nW": 1e-9, "uW": 1e-6, "mW": 1e-3, "W": 1.0}
-
-def parse_power_from_name(name):
-    m = POWER_RE.search(name)
-    val = float(m.group("val").replace("m", "-").replace("p", "."))
-    return val * UNIT_SCALE[m.group("unit")]
-
-def hill_saturation(P, Imax, n, K, c):
-    return Imax * P ** n / (K ** n + P ** n) + c
-
-popt, pcov = curve_fit(hill_saturation, powers_w, intensity,
-                       p0=[intensity.max(), 1.0, np.median(powers_w), 0.0],
-                       bounds=([0, 0.3, 0, -np.inf], [np.inf, 3.0, np.inf, np.inf]))
-
-def derivative_dlogp_nan(intensity, powers_w):
-    """Centered finite difference of I against log10(P), NaN-tolerant."""
-    logp = np.where(powers_w &gt; 0, np.log10(powers_w), np.nan)
-    out = np.full_like(intensity, np.nan, dtype=float)
-    for i in range(len(intensity)):
-        lo, hi = max(i - 1, 0), min(i + 1, len(intensity) - 1)
-        dy, dx = intensity[hi] - intensity[lo], logp[hi] - logp[lo]
-        if np.isfinite(dy) and np.isfinite(dx) and dx != 0:
-            out[i] = dy / dx
-    return out</code></pre>
-  </details>
-  <p class="filelink">Full runnable script: <a href="https://github.com/moonriver366/tmdc-data-processing-tutorial/blob/main/examples/02_power_dependence_saturation.py">examples/02_power_dependence_saturation.py</a></p>
 </section>
 
-<!-- ================= 3: TRPL ================= -->
-<section class="card" id="s3">
-  <h2><span class="num">3</span>TRPL: IRF-convolved decay fitting</h2>
-  <p class="lede">A TCSPC histogram is the true decay convolved with the instrument response function
-     (IRF). Instead of deconvolving (noisy!), we fit the analytic convolution of exponentials with a
-     Gaussian IRF — the exponentially-modified-Gaussian (erfc) form. Watch how the IRF width rounds the
-     rising edge and how the two lifetimes show up as two slopes on the log axis.</p>
+<!-- 1.3 RC -->
+<section class="card" id="s13">
+  <h3 class="sub"><span class="tag">1.3a</span>Reflectance contrast and the background problem</h3>
+  <p class="lede">RC = (R_sample − R_reference) / R_reference kills the lamp spectrum and the
+     system response — if you have a reference. With an off-sample / bare-substrate region, you
+     measure it and life is good. Without one (a planar cavity is <i>everywhere</i>, and its
+     "background" is thickness-dependent), the reference must be estimated. Toggle the checkbox
+     and watch how much the recovered feature depends on the interpolation choice.</p>
+  <div class="open-q"><b>Open question:</b> the best background estimate without a reference
+     region. My current approach: mask the feature, interpolate through the feature-free
+     wavelengths with a low-order polynomial, and report the spread over orders as a systematic.
+     Better ideas welcome.</div>
+  <div class="demo">
+    <div class="controls">
+      <div class="ctrl"><label class="chk"><input type="checkbox" id="rc-hasref" checked> off-sample reference available</label></div>
+      <div class="ctrl">interp. polynomial order <input type="range" id="rc-order" min="1" max="3" step="1" value="2"><span class="val" id="rc-order-v"></span></div>
+      <div class="ctrl">background wiggle <input type="range" id="rc-wig" min="0" max="4" step="0.5" value="2"><span class="val" id="rc-wig-v"></span></div>
+    </div>
+    <div class="plot" id="rc-plot" style="height:380px"></div>
+  </div>
+  <details class="code"><summary>Python — RC and background interpolation</summary>
+<pre><code class="language-python">rc = (R_sample - R_reference) / R_reference          # the clean case
+
+def estimate_background(E, R, feature_window=(1.67, 1.73), order=1):
+    """No reference region: mask the resonance, fit a polynomial through
+    the rest. Try a couple of orders; the spread IS the systematic."""
+    m = (E &lt; feature_window[0]) | (E &gt; feature_window[1])
+    coeffs = np.polyfit(E[m], R[m], order)
+    return np.polyval(coeffs, E)
+
+B = estimate_background(E, R_sample, order=2)
+rc_estimated = (R_sample - B) / B</code></pre>
+  </details>
+  <p class="filelink">Full script: <a href="https://github.com/moonriver366/data-processing-101/blob/main/examples/1_steady_state/02_reflectance_contrast_background.py">examples/1_steady_state/02_reflectance_contrast_background.py</a></p>
+</section>
+
+<!-- 1.3b lineshapes -->
+<section class="card" id="s13b">
+  <h3 class="sub"><span class="tag">1.3b</span>Lineshapes: Lorentzian, Gaussian, Fano</h3>
+  <p class="lede">Lorentzian = one damped resonance (heavy 1/ΔE² tails). Gaussian = inhomogeneous
+     broadening (tails die fast). Fano = a discrete resonance interfering with a continuum — the
+     generic case for a thin resonant layer on a dielectric stack. One formula covers the family:
+     F ∝ (q+ε)²/(1+ε²) with ε = 2(E−E₀)/Γ. Drag q: at q=0 it's a pure dip, at large q a
+     Lorentzian peak, in between the classic asymmetric shape whose <b>extremum is displaced from
+     E₀ by ~Γ/2q</b> — reading the position off the plot fails exactly when the shape is
+     asymmetric. Fit-recipe for p0/bounds: center from the (smoothed) extremum, bounded to the
+     window; width from counting samples above half-max, bounded below by instrument resolution;
+     amplitude from extremum-minus-baseline. A parameter pinned at a bound = wrong model or
+     window.</p>
+  <div class="demo">
+    <div class="controls">
+      <div class="ctrl">Fano q <input type="range" id="ls-q" min="0" max="8" step="0.1" value="1.3"><span class="val" id="ls-q-v"></span></div>
+      <div class="ctrl">width Γ <input type="range" id="ls-g" min="4" max="30" step="1" value="12"><span class="val" id="ls-g-v"></span></div>
+    </div>
+    <div class="plot" id="ls-plot" style="height:360px"></div>
+  </div>
+  <details class="code"><summary>Python — the three lineshapes + the p0/bounds recipe</summary>
+<pre><code class="language-python">def lorentzian(E, A, E0, G, c):
+    return A * (G / 2) ** 2 / ((E - E0) ** 2 + (G / 2) ** 2) + c
+
+def gaussian(E, A, E0, G, c):                        # parametrized by FWHM
+    return A * np.exp(-0.5 * ((E - E0) / (G / 2.355)) ** 2) + c
+
+def fano(E, A, E0, G, q, c):
+    eps = 2.0 * (E - E0) / G
+    return A * (q + eps) ** 2 / (1.0 + eps ** 2) + c
+
+def initial_guess(E, y):
+    base = np.median(np.concatenate([y[:20], y[-20:]]))
+    i_ext = int(np.argmax(np.abs(y - base)))         # center: the extremum
+    A0 = y[i_ext] - base                             # amplitude vs baseline
+    above = E[np.abs(y - base) &gt; 0.5 * abs(A0)]      # width: half-max span
+    G0 = max(above.max() - above.min(), (E[1] - E[0]) * 3)
+    return base, E[i_ext], A0, G0</code></pre>
+  </details>
+  <p class="filelink">Full script: <a href="https://github.com/moonriver366/data-processing-101/blob/main/examples/1_steady_state/03_lineshapes_lorentzian_gaussian_fano.py">examples/1_steady_state/03_lineshapes_lorentzian_gaussian_fano.py</a></p>
+</section>
+
+<!-- 1.3c TMM -->
+<section class="card" id="s13c">
+  <h3 class="sub"><span class="tag">1.3c</span>Why RC looks Fano: a 30-line transfer-matrix check</h3>
+  <p class="lede">Put a perfectly symmetric Lorentz oscillator in a thin layer (the textbook case:
+     an hBN-encapsulated monolayer on SiO₂/Si) and compute the RC with a transfer matrix: the
+     lineshape comes out asymmetric, and its <b>sign and shape swing with the oxide thickness</b> —
+     pure interference between the resonant reflection and the rest of the stack. So before
+     reading physics into an asymmetric or inverted RC lineshape, check the stack. Live TMM below:
+     drag the oscillator strength and the spacer thickness.</p>
+  <div class="demo">
+    <div class="controls">
+      <div class="ctrl">oscillator strength <input type="range" id="tmm-f" min="0.1" max="2" step="0.05" value="0.8"><span class="val" id="tmm-f-v"></span></div>
+      <div class="ctrl">SiO₂ thickness <input type="range" id="tmm-t" min="80" max="350" step="5" value="285"><span class="val" id="tmm-t-v"></span></div>
+    </div>
+    <div class="plot" id="tmm-plot" style="height:360px"></div>
+  </div>
+  <details class="code"><summary>Python — the TMM core</summary>
+<pre><code class="language-python">def reflectance_stack(E_eV, layers, n_in=1.0, n_sub=3.88 + 0.02j):
+    """layers = [(refractive_index, thickness_nm), ...], normal incidence."""
+    lam_nm = 1239.841984 / np.asarray(E_eV)
+    m11 = np.ones_like(lam_nm, dtype=complex); m12 = np.zeros_like(m11)
+    m21 = np.zeros_like(m11);                  m22 = np.ones_like(m11)
+    for n, t_nm in layers:
+        n = np.asarray(n, dtype=complex) * np.ones_like(m11)
+        d = 2 * np.pi * n * t_nm / lam_nm
+        c, s = np.cos(d), np.sin(d)
+        m11, m12, m21, m22 = (m11*c + m12*1j*n*s, m11*1j*s/n + m12*c,
+                              m21*c + m22*1j*n*s, m21*1j*s/n + m22*c)
+    num = n_in * (m11 + m12 * n_sub) - (m21 + m22 * n_sub)
+    den = n_in * (m11 + m12 * n_sub) + (m21 + m22 * n_sub)
+    return np.abs(num / den) ** 2
+
+def lorentz_index(E, eps_b=6.0, f=0.8, E0=1.70, gamma=0.010):
+    return np.sqrt(eps_b + f / (E0**2 - E**2 - 1j * gamma * E))</code></pre>
+  </details>
+  <p class="filelink">Full script: <a href="https://github.com/moonriver366/data-processing-101/blob/main/examples/1_steady_state/04_tmm_thin_film_simulation.py">examples/1_steady_state/04_tmm_thin_film_simulation.py</a></p>
+</section>
+
+<!-- 1.4 PL -->
+<section class="card" id="s14">
+  <h3 class="sub"><span class="tag">1.4</span>Steady-state PL: the counts and the profile</h3>
+  <p class="lede">Two reminders before interpreting PL. <b>(i) PL is time-integrated.</b> With a
+     pulsed laser, counts ∝ rep-rate × photons-per-pulse: the same average power at half the rep
+     rate doubles the per-pulse density, so anything nonlinear changes "the same measurement".
+     And integrated intensity ∝ n₀·τ — a sample can dim purely because a nonradiative channel
+     shortened τ. <b>(ii) The profile is not the laser.</b> Whatever is excited moves before it
+     emits: for diffusion during an exponential lifetime the variances add, σ²_PL = σ²_laser +
+     2Dτ, giving the diffusion length from two <i>second moments</i> (a Gaussian fit is
+     core-weighted and biased low once the time-integrated profile grows heavy wings — the
+     readout below uses moments). Peak fitting itself: same recipe as reflectance, §1.3b.</p>
+  <div class="demo">
+    <div class="controls">
+      <div class="ctrl">diffusion length √(Dτ) <input type="range" id="dl-ld" min="0" max="1.5" step="0.05" value="0.45"><span class="val" id="dl-ld-v"></span></div>
+      <div class="ctrl">laser σ <input type="range" id="dl-sl" min="0.2" max="1" step="0.05" value="0.35"><span class="val" id="dl-sl-v"></span></div>
+    </div>
+    <div class="readout">
+      <span>recovered √((σ²_PL−σ²_L)/2) from moments: <b id="dl-out"></b> µm</span>
+    </div>
+    <div class="plot" id="dl-plot" style="height:330px"></div>
+  </div>
+  <details class="code"><summary>Python — time-integrated profile and the moment estimator</summary>
+<pre><code class="language-python">def steady_state_profile(x, sigma_L, D, tau, n_t=400):
+    """I(x) ~ integral dt e^{-t/tau} N(x; sigma_L^2 + 2 D t)"""
+    t = np.linspace(0, 8 * tau, n_t)
+    var = sigma_L ** 2 + 2 * D * t
+    w = np.exp(-t / tau)
+    return np.trapz(w / np.sqrt(var) *
+                    np.exp(-0.5 * x[:, None] ** 2 / var), t, axis=1)
+
+def moment_sigma(x, y):
+    """Variance obeys the sum rule exactly; a Gaussian FIT does not (it is
+    core-weighted, biased low on heavy-winged profiles). Subtract the
+    baseline; do NOT clip negative noise (clipping rectifies the wings)."""
+    yy = y - np.median(y[np.abs(x) &gt; 0.8 * x.max()])
+    mu = np.sum(x * yy) / np.sum(yy)
+    return np.sqrt(np.sum((x - mu) ** 2 * yy) / np.sum(yy))
+
+L_D = np.sqrt((moment_sigma(x, pl) ** 2 - moment_sigma(x, laser) ** 2) / 2)</code></pre>
+  </details>
+  <p class="filelink">Full script: <a href="https://github.com/moonriver366/data-processing-101/blob/main/examples/1_steady_state/05_pl_and_spatial_profile.py">examples/1_steady_state/05_pl_and_spatial_profile.py</a></p>
+</section>
+
+<!-- 1.5 sweeps -->
+<section class="card" id="s15">
+  <h3 class="sub"><span class="tag">1.5</span>Sweeps: tracking peaks vs power / temperature / gate</h3>
+  <p class="lede">Every sample gets swept against something, and the data becomes a stack of
+     spectra vs a control knob. To track a species through the sweep I fit <b>sequentially</b>:
+     step k's result seeds step k+1's initial guess, with bounds tightened to a window around it.
+     Identity is preserved by continuity — a physical assumption, so it fails (deliberately) at a
+     genuine abrupt transition; watch the residuals for that. Independent per-step fits with a
+     generic p0 swap peak identities as soon as two peaks overlap. Drag the knob through the
+     crossing region below.</p>
+  <div class="demo">
+    <div class="controls">
+      <div class="ctrl">control knob <input type="range" id="tr-k" min="0" max="49" step="1" value="25"><span class="val" id="tr-k-v"></span></div>
+    </div>
+    <div class="plot" id="tr-plot" style="height:400px"></div>
+  </div>
+  <details class="code"><summary>Python — sequential constrained fitting</summary>
+<pre><code class="language-python">def fit_sequential(E, spectra, mu_window=0.006, amp_factor=2.0):
+    """Previous popt becomes p0; bounds tighten around it."""
+    out, prev = [], None
+    for spec in spectra:
+        if prev is None:
+            p0, lo, hi = generic_first_step()
+        else:
+            p0 = list(prev)
+            lo = [max(prev[0] / amp_factor, 0), prev[1] - mu_window, 0.003,
+                  max(prev[3] / amp_factor, 0), prev[4] - mu_window, 0.003]
+            hi = [max(prev[0] * amp_factor, 50), prev[1] + mu_window, 0.03,
+                  max(prev[3] * amp_factor, 50), prev[4] + mu_window, 0.03]
+            p0 = [min(max(p, l), h) for p, l, h in zip(p0, lo, hi)]
+        try:
+            popt, _ = curve_fit(two_peaks, E, spec, p0=p0, bounds=(lo, hi))
+            out.append(popt); prev = popt
+        except RuntimeError:
+            out.append([np.nan] * 6)      # visible gap, keep prev as seed</code></pre>
+  </details>
+  <p class="filelink">Full script: <a href="https://github.com/moonriver366/data-processing-101/blob/main/examples/1_steady_state/06_parameter_sweep_peak_tracking.py">examples/1_steady_state/06_parameter_sweep_peak_tracking.py</a></p>
+</section>
+
+<!-- ======================= PART 2 ======================= -->
+<div class="part-head" id="p2"><span class="pnum">2</span>
+  <div><h2>Time-resolved: TRPL &amp; PL imaging</h2>
+  <p>histograms, the IRF, spatial profiles and what actually moves</p></div>
+</div>
+
+<!-- 2.1 TRPL -->
+<section class="card" id="s21">
+  <h3 class="sub"><span class="tag">2.1–2.2</span>The TCSPC histogram and IRF-convolved fitting</h3>
+  <p class="lede">A PicoHarp / SPAD file is fundamentally two numbers (time bin width, number of
+     channels) plus counts. The histogram is the decay <b>convolved with the instrument response
+     function</b> — laser pulse + detector jitter + electronics, typically tens to hundreds of ps.
+     Never deconvolve (it amplifies noise); fit the analytic convolution of exponentials with a
+     Gaussian IRF (the erfc form below), weighted by √counts, with the dark floor taken from
+     pre-pulse bins. Cross-check the fitted lifetimes with the model-free 1/e time.</p>
   <div class="demo">
     <div class="controls">
       <div class="ctrl">τ₁ (fast) <input type="range" id="s3-t1" min="0.2" max="5" step="0.1" value="1.2"><span class="val" id="s3-t1-v"></span></div>
       <div class="ctrl">τ₂ (slow) <input type="range" id="s3-t2" min="5" max="30" step="0.5" value="12"><span class="val" id="s3-t2-v"></span></div>
       <div class="ctrl">IRF σ <input type="range" id="s3-w" min="0.05" max="1.5" step="0.05" value="0.35"><span class="val" id="s3-w-v"></span></div>
     </div>
-    <div class="plot" id="s3-plot" style="height:400px"></div>
+    <div class="plot" id="s3-plot" style="height:380px"></div>
   </div>
   <details class="code"><summary>Python — analytic IRF convolution (erfc form)</summary>
 <pre><code class="language-python">from scipy.special import erfc
@@ -256,201 +456,243 @@ def _conv_term(t, A, tau, t0, w):
     arg_exp  = (w * w - 2.0 * tau * (t - t0)) / (2.0 * tau * tau)
     arg_erfc = (w * w - tau * (t - t0)) / (np.sqrt(2.0) * w * tau)
     out = np.zeros_like(t, dtype=float)
-    safe = arg_exp &lt; 700.0                    # keep exp() finite
+    safe = arg_exp &lt; 700.0
     out[safe] = 0.5 * A * np.exp(arg_exp[safe]) * erfc(arg_erfc[safe])
     return out
 
 def biexp_irf(t, y0, t0, A1, tau1, A2, tau2, w):
     return y0 + _conv_term(t, A1, tau1, t0, w) + _conv_term(t, A2, tau2, t0, w)
 
-# Poisson-weighted fit: sigma = sqrt(counts)
-sigma = np.sqrt(np.clip(counts, 1, None))
-popt, pcov = curve_fit(biexp_irf, t, counts, p0=p0, bounds=(lo, hi), sigma=sigma)
-
-def tau_1e_from_peak(t, y):
-    """Model-free cross-check: time from peak to peak/e (linear interp)."""
-    imax = int(np.argmax(y)); tail = y[imax:] / y[imax]
-    j = int(np.where(tail &lt;= 1.0 / np.e)[0][0])
-    frac = (1.0 / np.e - tail[j - 1]) / (tail[j] - tail[j - 1])
-    return t[imax + j - 1] + frac * (t[imax + j] - t[imax + j - 1]) - t[imax]</code></pre>
+sigma = np.sqrt(np.clip(counts, 1, None))            # Poisson weights
+popt, pcov = curve_fit(biexp_irf, t, counts, p0=p0, bounds=(lo, hi), sigma=sigma)</code></pre>
   </details>
-  <p class="filelink">Full runnable script: <a href="https://github.com/moonriver366/tmdc-data-processing-tutorial/blob/main/examples/03_trpl_irf_convolved_decay.py">examples/03_trpl_irf_convolved_decay.py</a></p>
+  <p class="filelink">Full script: <a href="https://github.com/moonriver366/data-processing-101/blob/main/examples/2_time_resolved/01_trpl_irf_convolved_fit.py">examples/2_time_resolved/01_trpl_irf_convolved_fit.py</a></p>
 </section>
 
-<!-- ================= 4: TA CHIRP ================= -->
-<section class="card" id="s4">
-  <h2><span class="num">4</span>Transient absorption maps &amp; chirp correction</h2>
-  <p class="lede">In a pump-probe ΔR/R map the probe's time zero drifts with wavelength (group velocity
-     dispersion) — the "chirp". We model t₀(λ) as a polynomial fitted to the coherent artifact and
-     re-interpolate every wavelength column onto a common time axis. Crank the chirp up and toggle the
-     correction: the bleach (blue) and photoinduced absorption (red) snap back to a flat onset.</p>
+<!-- 2.3 scan vs array -->
+<section class="card" id="s23">
+  <h3 class="sub"><span class="tag">2.3</span>Spatial profiles two ways: point scan vs detector array</h3>
+  <p class="lede">Route A: single-pixel detector + two stages — park, record a full decay, move,
+     repeat over a grid. Full time resolution everywhere, but slow (N² acquisitions) and
+     drift-sensitive. Route B: a detector array (ours has 23 pixels) records everywhere at once;
+     it doesn't <i>image</i> the spot, it <i>samples</i> it, and a 2D Gaussian fit per time bin
+     turns the samples into σ_x, σ_y — carried around as σ_eq = √((σ_x²+σ_y²)/2). Both routes
+     end at the same deliverable: σ(t), the input for the MSD analysis below. The
+     <a href="https://github.com/moonriver366/data-processing-101/blob/main/examples/2_time_resolved/02_spatial_profiles_scan_vs_array.py">script</a>
+     simulates both and shows they agree (the sparse array is noisier at late times, as it should
+     be).</p>
+  <details class="code"><summary>Python — the 2D Gaussian fit both routes share</summary>
+<pre><code class="language-python">def gauss2d(coords, A, x0, y0, sx, sy, offset):
+    x, y = coords
+    return (A * np.exp(-(((x - x0)**2) / (2 * sx**2)
+                       + ((y - y0)**2) / (2 * sy**2))) + offset)
+
+def fit_gauss2d(x, y, z):
+    p0 = [z.max() - z.min(),
+          np.average(x, weights=z - z.min() + 1e-12),
+          np.average(y, weights=z - z.min() + 1e-12), 1.0, 1.0, z.min()]
+    popt, _ = curve_fit(gauss2d, (x, y), z, p0=p0, bounds=(lo, hi))
+    sigma_eq = np.sqrt((popt[3] ** 2 + popt[4] ** 2) / 2)
+    return popt, sigma_eq</code></pre>
+  </details>
+</section>
+
+<!-- 2.4 MSD -->
+<section class="card" id="s24">
+  <h3 class="sub"><span class="tag">2.4</span>MSD analysis: broadening is not always transport</h3>
+  <p class="lede">Fit σ(t), plot MSD = σ(t)² − σ(0)², read the physics off the shape — carefully.
+     Four mechanisms broaden a profile and only two involve motion: <b>diffusion</b> (MSD = 2Dt,
+     linear), <b>ballistic</b> (v²t², superlinear), <b>annihilation</b> (bimolecular decay eats
+     the dense center first — the profile flattens and σ grows with zero transport), and
+     <b>emission saturation</b> (detected signal clips at the center early on — apparent σ starts
+     high and <i>shrinks</i>: "negative diffusion"). Pick a mechanism and scrub time. My
+     acceptance test before claiming a D: MSD linear over a decade of time, AND the extracted D
+     independent of pump power. A power-dependent "D" is the classic annihilation fingerprint.</p>
+  <div class="demo">
+    <div class="controls">
+      <div class="ctrl">mechanism
+        <select id="msd-reg">
+          <option value="0" selected>diffusion (D = 0.10)</option>
+          <option value="1">ballistic (v = 0.25)</option>
+          <option value="2">annihilation only (D = 0)</option>
+          <option value="3">saturation only (D = 0)</option>
+        </select></div>
+      <div class="ctrl">time <input type="range" id="msd-t" min="0" max="40" step="1" value="10"><span class="val" id="msd-t-v"></span></div>
+    </div>
+    <div class="plot" id="msd-plot" style="height:360px"></div>
+  </div>
+  <details class="code"><summary>Python — the 1D kinetic simulation behind this</summary>
+<pre><code class="language-python"># dn/dt = D n'' - n/tau - gamma n^2   (explicit Euler; the ballistic case
+# advects two half-populations at +/- v; saturation applies n/(1+n/n_sat)
+# at DETECTION, not in the kinetics)
+for i, t in enumerate(times):
+    lap = (np.roll(n, 1) - 2 * n + np.roll(n, -1)) / dx ** 2
+    n = n + dt * (D * lap - n / tau - gamma * n * n)
+
+# then per snapshot: Gaussian fit -&gt; sigma(t);  MSD = sigma^2 - sigma0^2</code></pre>
+  </details>
+  <p class="filelink">Full script: <a href="https://github.com/moonriver366/data-processing-101/blob/main/examples/2_time_resolved/03_msd_transport_regimes.py">examples/2_time_resolved/03_msd_transport_regimes.py</a></p>
+</section>
+
+<!-- 2.5 cascade -->
+<section class="card" id="s25">
+  <h3 class="sub"><span class="tag">2.5</span>Two species, one cascade: spectrally-resolved imaging</h3>
+  <p class="lede">With two emission bands, a band-pass in the imaging path gives one spatial
+     profile per species. A toy model worth internalizing: the pump creates only the high-energy
+     species H; H relaxes into low-energy L; L has finite capacity, so the transfer saturates.
+     Prediction: H stays laser-shaped, L comes out <b>broader and flat-topped at high pump</b> —
+     the center hits capacity and clips, the wings don't — and L's rise at the center is slower
+     than in the wings. Crank the pump. A flat-top or donut in one spectral window with a normal
+     Gaussian in the other is a <i>saturation</i> fingerprint; the low-pump check (left end of
+     the slider) is what separates it from transport.</p>
+  <div class="demo">
+    <div class="controls">
+      <div class="ctrl">pump level <input type="range" id="cas-p" min="0.3" max="8" step="0.1" value="6"><span class="val" id="cas-p-v"></span></div>
+    </div>
+    <div class="plot" id="cas-plot" style="height:340px"></div>
+  </div>
+  <details class="code"><summary>Python — the cascade rate equations</summary>
+<pre><code class="language-python"># dn_H/dt = -n_H/tau_H - k n_H (1 - n_L/N_sat)
+# dn_L/dt = -n_L/tau_L + k n_H (1 - n_L/N_sat)
+for i, t in enumerate(times):
+    transfer = k * nH * np.clip(1.0 - nL / N_sat, 0.0, None)
+    nH = nH + dt * (-nH / tau_H - transfer)
+    nL = nL + dt * (-nL / tau_L + transfer)
+    H_integrated += nH / tau_H * dt      # what the filtered camera sees
+    L_integrated += nL / tau_L * dt</code></pre>
+  </details>
+  <p class="filelink">Full script: <a href="https://github.com/moonriver366/data-processing-101/blob/main/examples/2_time_resolved/04_two_species_cascade.py">examples/2_time_resolved/04_two_species_cascade.py</a></p>
+</section>
+
+<!-- ======================= PART 3 ======================= -->
+<div class="part-head" id="p3"><span class="pnum">3</span>
+  <div><h2>Time-resolved: transient reflectance (TA)</h2>
+  <p>pump-probe maps — and why the signal is not automatically population</p></div>
+</div>
+
+<!-- 3.1 origins -->
+<section class="card" id="s31">
+  <h3 class="sub"><span class="tag">3.1</span>What makes a dR/R signal</h3>
+  <p class="lede">dR/R₀ = (R_on − R_off)/R_off. The pump can do three independent things to the
+     resonance, each with its own fingerprint: an <b>amplitude</b> change (bleach or induced
+     absorption) gives one lobe shaped like the resonance itself — the population-like term; a
+     <b>spectral shift</b> gives a dispersive two-lobe first-derivative shape; <b>broadening</b>
+     gives a three-lobe second-derivative shape. Shift and broadening produce large signals with
+     essentially zero population change. Mix them below — then imagine sampling this at a single
+     wavelength and calling it "the dynamics". That's why maps beat single-wavelength kinetics: a
+     trace on a shifting resonance can flip sign while the population decays monotonically.</p>
+  <div class="demo">
+    <div class="controls">
+      <div class="ctrl">bleach <input type="range" id="dr-b" min="0" max="50" step="1" value="20"><span class="val" id="dr-b-v"></span></div>
+      <div class="ctrl">shift <input type="range" id="dr-s" min="-5" max="5" step="0.2" value="0"><span class="val" id="dr-s-v"></span></div>
+      <div class="ctrl">broadening <input type="range" id="dr-w" min="0" max="50" step="1" value="0"><span class="val" id="dr-w-v"></span></div>
+    </div>
+    <div class="plot" id="dr-plot" style="height:360px"></div>
+  </div>
+  <details class="code"><summary>Python — pump-on spectrum and dR/R</summary>
+<pre><code class="language-python">def reflectance_dip(E, A=0.15, E0=1.70, G=0.012, base=0.35, slope=-0.15):
+    return base + slope * (E - 1.70) - A * (G/2)**2 / ((E - E0)**2 + (G/2)**2)
+
+def pumped(E, bleach=0.0, shift=0.0, broaden=0.0):
+    return reflectance_dip(E, A=0.15 * (1 - bleach),
+                           E0=1.70 + shift, G=0.012 * (1 + broaden))
+
+dr_over_r = (pumped(E, **modification) - R0) / R0
+# one lobe = amplitude | two lobes = shift | three lobes = broadening</code></pre>
+  </details>
+  <p class="filelink">Full script: <a href="https://github.com/moonriver366/data-processing-101/blob/main/examples/3_transient_reflectance/01_dr_over_r_origins.py">examples/3_transient_reflectance/01_dr_over_r_origins.py</a></p>
+</section>
+
+<!-- 3.2 chirp -->
+<section class="card" id="s32">
+  <h3 class="sub"><span class="tag">3.2</span>Calibration and chirp correction</h3>
+  <p class="lede">Raw camera files (ours come as paired "para"/"sum" text files: delays in the
+     para header, frames concatenated in the sum) reshape to a (delay, y, wavelength) stack. Two
+     preprocessing steps before any physics. <b>Wavelength:</b> drop long/shortpass filters into
+     the white-light probe — it truncates exactly at the filter edge, the 50% crossing pixel maps
+     to the edge wavelength, two filters give the two-point linear calibration. <b>Chirp:</b>
+     group-velocity dispersion makes t₀ wavelength-dependent (the bent onset below); fit a
+     polynomial t₀(λ) to the onset / coherent artifact and re-interpolate each wavelength column
+     onto a common time axis. Crank the chirp and toggle the correction.</p>
   <div class="demo">
     <div class="controls">
       <div class="ctrl">chirp strength <input type="range" id="s4-c" min="0" max="2.5" step="0.1" value="1.0"><span class="val" id="s4-c-v"></span></div>
       <div class="ctrl"><label class="chk"><input type="checkbox" id="s4-corr" checked> apply chirp correction</label></div>
     </div>
-    <div class="plot" id="s4-plot" style="height:430px"></div>
+    <div class="plot" id="s4-plot" style="height:400px"></div>
   </div>
-  <details class="code"><summary>Python — chirp correction by column re-interpolation</summary>
-<pre><code class="language-python">def t0_of_wavelength(wl, coeffs=(-3.8e-5, 0.072, -31.6)):
-    """Chirp model: polynomial arrival time t0(lambda), fitted in practice
-    to the coherent artifact."""
-    return np.polyval(coeffs, wl)
+  <details class="code"><summary>Python — filter-edge calibration + chirp correction</summary>
+<pre><code class="language-python">def edge_crossing_pixel(profile):
+    """White light truncates at the filter edge; find the 50% crossing."""
+    half = 0.5 * np.percentile(profile, 90)
+    i = int(np.argmax(profile &gt; half))
+    y0, y1 = profile[i - 1], profile[i]
+    return (i - 1) + (half - y0) / (y1 - y0)
+# two filters -&gt; two (pixel, lambda) anchors -&gt; linear axis
 
 def chirp_correct(t, wl, data, coeffs, dt_uniform=0.1):
-    # 1. resample onto a uniform time grid
     t_uni = np.arange(t[0], t[-1], dt_uniform)
-    data_uni = np.empty((t_uni.size, wl.size))
-    for j in range(wl.size):
-        data_uni[:, j] = np.interp(t_uni, t, data[:, j])
-    # 2. shift each wavelength column by its own t0 (spline via map_coordinates)
-    t0 = t0_of_wavelength(wl, coeffs); t0 -= t0.mean()
+    data_uni = np.stack([np.interp(t_uni, t, data[:, j])
+                         for j in range(wl.size)], axis=1)
+    t0 = np.polyval(coeffs, wl); t0 -= t0.mean()
     idx = (t_uni[:, None] + t0[None, :] - t_uni[0]) / dt_uniform
     coords = np.stack([idx, np.broadcast_to(np.arange(wl.size), idx.shape)])
     corrected = map_coordinates(data_uni, coords, order=1, mode="nearest")
-    # 3. crop to the window valid for every column
-    lo = max(0, int(np.ceil(-t0.min() / dt_uniform)))
-    hi = corrected.shape[0] - max(0, int(np.ceil(t0.max() / dt_uniform)))
-    return t_uni[lo:hi], corrected[lo:hi]</code></pre>
+    return crop_to_common_window(t_uni, corrected, t0, dt_uniform)</code></pre>
   </details>
-  <p class="filelink">Full runnable script: <a href="https://github.com/moonriver366/tmdc-data-processing-tutorial/blob/main/examples/04_ta_map_chirp_correction.py">examples/04_ta_map_chirp_correction.py</a></p>
+  <p class="filelink">Full script: <a href="https://github.com/moonriver366/data-processing-101/blob/main/examples/3_transient_reflectance/02_ta_map_chirp_correction.py">examples/3_transient_reflectance/02_ta_map_chirp_correction.py</a></p>
 </section>
 
-<!-- ================= 5: GATE MAPS ================= -->
-<section class="card" id="s5">
-  <h2><span class="num">5</span>Gate-dependent PL: species tracking</h2>
-  <p class="lede">Sweeping the gate voltage moves the Fermi level: at charge neutrality the neutral
-     exciton X⁰ dominates; with doping, oscillator strength transfers to the trion, which also
-     red-shifts. Each row of the map is one spectrum; a windowed double-Gaussian fit per row tracks
-     both species. Drag the gate slider to see the spectrum and its decomposition at that voltage.</p>
+<!-- 3.3 viewer -->
+<section class="card" id="s33">
+  <h3 class="sub"><span class="tag">3.3</span>The full map analysis, live</h3>
+  <p class="lede">Everything converges here: a (delay, y, λ) stack with a weak signal that decays
+     and diffuses. <b>Click the map</b> to move the crosshair, scrub the delay. The spatial cut
+     gets a live Gaussian fit → σ(t); the dynamics panel keeps the <b>pre-t₀ points</b> (they
+     establish the baseline and expose pump scatter) and fits a plain exponential after the rise —
+     no IRF convolution needed here, because pump-probe time resolution is the optical
+     cross-correlation of two ~100 fs pulses, orders of magnitude below the dynamics, unlike a
+     TCSPC detector IRF which competes with the lifetime. The MSD panel turns σ(t) into a D —
+     subject to every caveat from §2.4. One more trap, visible right here: the fitted τ at the
+     spot center comes out <b>shorter than the population lifetime</b> (12 ps in this synthetic
+     stack), because diffusion carries signal out of the point you're watching. Local decay ≠
+     population decay whenever anything moves — transport lives in the MSD panel, not in a
+     single-point τ.</p>
   <div class="demo">
     <div class="controls">
-      <div class="ctrl">gate voltage <input type="range" id="s5-vg" min="0" max="60" step="1" value="30"><span class="val" id="s5-vg-v"></span></div>
-    </div>
-    <div class="plot" id="s5-plot" style="height:430px"></div>
-  </div>
-  <details class="code"><summary>Python — NaN-aware smoothing + double-Gaussian tracking</summary>
-<pre><code class="language-python">def nan_gaussian_smooth_2d(z, sigma_gate=1.0, sigma_energy=1.5):
-    """Gaussian-smooth a map containing NaNs without letting them spread:
-    normalized convolution over the *valid* neighbors only."""
-    valid = np.isfinite(z).astype(float)
-    filled = np.where(np.isfinite(z), z, 0.0)
-    num = gaussian_filter(filled, sigma=(sigma_gate, sigma_energy), mode="nearest")
-    den = gaussian_filter(valid,  sigma=(sigma_gate, sigma_energy), mode="nearest")
-    out = np.full_like(z, np.nan, dtype=float)
-    np.divide(num, den, out=out, where=den &gt; 1e-12)
-    return out
-
-def double_gaussian(E, A1, mu1, s1, A2, mu2, s2):
-    """Exciton (peak 1) + trion (peak 2)."""
-    return (A1 * np.exp(-0.5 * ((E - mu1) / s1) ** 2)
-          + A2 * np.exp(-0.5 * ((E - mu2) / s2) ** 2))
-
-# per gate voltage: fixed energy windows keep each Gaussian on its species
-p0 = [spec.max(), 1.735, 0.008, spec.max() / 2, 1.700, 0.011]
-lo = [0, 1.720, 0.003, 0, 1.670, 0.003]
-hi = [np.inf, 1.755, 0.020, np.inf, 1.715, 0.025]
-popt, _ = curve_fit(double_gaussian, energy, spec, p0=p0, bounds=(lo, hi))</code></pre>
-  </details>
-  <p class="filelink">Full runnable script: <a href="https://github.com/moonriver366/tmdc-data-processing-tutorial/blob/main/examples/05_gate_dependent_pl_map.py">examples/05_gate_dependent_pl_map.py</a></p>
-</section>
-
-<!-- ================= 6: POLARITON ================= -->
-<section class="card" id="s6">
-  <h2><span class="num">6</span>Exciton-polariton dispersion</h2>
-  <p class="lede">When a microcavity photon and a TMDC exciton couple strongly, the angle-resolved
-     reflectance shows two anticrossing branches. Diagonalizing the 2×2 coupled-oscillator
-     Hamiltonian gives the branch energies and the Hopfield coefficients (photon/exciton content).
-     Play with the detuning and Rabi splitting — the minimum LP–UP gap always equals 2g at zero detuning.</p>
-  <div class="demo">
-    <div class="controls">
-      <div class="ctrl">detuning E<sub>c0</sub>−E<sub>X</sub> <input type="range" id="s6-d" min="-40" max="40" step="1" value="-13"><span class="val" id="s6-d-v"></span></div>
-      <div class="ctrl">Rabi splitting 2g <input type="range" id="s6-g" min="5" max="60" step="1" value="28"><span class="val" id="s6-g-v"></span></div>
-    </div>
-    <div class="plot" id="s6-plot" style="height:420px"></div>
-  </div>
-  <details class="code"><summary>Python — coupled-oscillator model + Hopfield fractions</summary>
-<pre><code class="language-python">def cavity_dispersion(theta_deg, Ec0, n_eff):
-    """Planar-cavity photon dispersion vs external angle."""
-    s = np.sin(np.deg2rad(theta_deg)) / n_eff
-    return Ec0 / np.sqrt(1.0 - s * s)
-
-def polariton_bands(Ec, EX, twog):
-    """LP and UP energies from diagonalizing [[Ec, g], [g, EX]]."""
-    d = Ec - EX
-    Om = np.sqrt(d * d + twog * twog)
-    Emid = 0.5 * (Ec + EX)
-    return Emid - 0.5 * Om, Emid + 0.5 * Om
-
-def hopfield_fractions(Ec, EX, twog):
-    """|C|^2 (photon) and |X|^2 (exciton) content of the LP branch."""
-    d = Ec - EX
-    Om = np.maximum(np.sqrt(d * d + twog * twog), 1e-30)
-    return 0.5 * (1.0 - d / Om), 0.5 * (1.0 + d / Om)
-
-# fit both extracted branches simultaneously
-def residuals(p):
-    EX, twog, Ec0, n_eff = p
-    Elp, Eup = polariton_bands(cavity_dispersion(theta, Ec0, n_eff), EX, twog)
-    return np.concatenate([(Elp - lp)[np.isfinite(lp)],
-                           (Eup - up)[np.isfinite(up)]])
-res = least_squares(residuals, x0=[1.73, 0.02, 1.72, 2.0],
-                    bounds=([1.6, 0.005, 1.6, 1.2], [1.85, 0.08, 1.85, 4.0]))</code></pre>
-  </details>
-  <p class="filelink">Full runnable script: <a href="https://github.com/moonriver366/tmdc-data-processing-tutorial/blob/main/examples/06_polariton_dispersion_fit.py">examples/06_polariton_dispersion_fit.py</a></p>
-</section>
-
-<!-- ================= 7: VIEWER ================= -->
-<section class="card" id="s7">
-  <h2><span class="num">7</span>The interactive viewer pattern</h2>
-  <p class="lede">Every lab viewer shares one layout: a 2D map with a click-to-move crosshair, a
-     spectral linecut (row), a spatial linecut (column), the dynamics at the crosshair, and a frame
-     slider for 3D stacks. <b>Click anywhere on the map</b> to move the crosshair, and scrub the delay
-     slider — this is a decaying, diffusing excitation spot in a synthetic (delay, y, λ) TA stack.</p>
-  <div class="demo">
-    <div class="controls">
-      <div class="ctrl">delay <input type="range" id="s7-t" min="0" max="39" step="1" value="6"><span class="val" id="s7-t-v"></span></div>
+      <div class="ctrl">delay <input type="range" id="s7-t" min="0" max="44" step="1" value="14"><span class="val" id="s7-t-v"></span></div>
       <div class="ctrl" style="color:var(--muted)">💡 click the map to move the crosshair</div>
     </div>
-    <div class="plot" id="s7-map" style="height:340px"></div>
+    <div class="plot" id="s7-map" style="height:320px"></div>
     <div style="display:flex; flex-wrap:wrap">
-      <div class="plot" id="s7-spec" style="height:250px; flex:1 1 300px"></div>
+      <div class="plot" id="s7-spat" style="height:250px; flex:1 1 300px"></div>
       <div class="plot" id="s7-dyn" style="height:250px; flex:1 1 300px"></div>
+      <div class="plot" id="s7-msd" style="height:250px; flex:1 1 300px"></div>
     </div>
   </div>
-  <details class="code"><summary>Python — matplotlib viewer skeleton (crosshair + linecuts + slider)</summary>
-<pre><code class="language-python">class MapViewer:
-    def __init__(self, delays, y_um, wl, stack):
-        self.im = self.ax_map.imshow(stack[self.i_t], origin="lower",
-                                     aspect="auto", cmap="RdBu_r",
-                                     vmin=-vmax, vmax=vmax)
-        self.ch_h = self.ax_map.axhline(self.cur_y, color="k", lw=0.8, ls="--")
-        self.ch_v = self.ax_map.axvline(self.cur_wl, color="k", lw=0.8, ls="--")
-        self.slider = Slider(ax_sl, "delay index", 0, delays.size - 1,
-                             valinit=self.i_t, valstep=1)
-        self.slider.on_changed(self.on_slider)
-        self.fig.canvas.mpl_connect("button_press_event", self.on_click)
-
-    def on_click(self, event):
-        if event.inaxes is not self.ax_map: return
-        self.cur_wl, self.cur_y = event.xdata, event.ydata   # cursor memory
-        self.redraw()
-
+  <details class="code"><summary>Python — the viewer skeleton (crosshair + live fits + MSD)</summary>
+<pre><code class="language-python">class TAViewer:
     def redraw(self):
-        iy = int(np.argmin(np.abs(self.y_um - self.cur_y)))
-        iw = int(np.argmin(np.abs(self.wl - self.cur_wl)))
         frame = self.stack[self.i_t]
-        self.im.set_data(frame)
-        self.spec_line.set_data(self.wl, frame[iy, :])       # row linecut
-        self.vert_line.set_data(self.y_um, frame[:, iw])     # column linecut
-        self.dyn_line.set_data(self.delays, self.stack[:, iy, iw])
-        self.fig.canvas.draw_idle()</code></pre>
+        self.im.set_data(frame)                       # map + crosshair
+        prof = frame[:, iw]                           # spatial cut
+        popt = fit_spatial_sigma(self.y_um, prof)     # live Gaussian fit
+        dyn = self.stack[:, iy, iw]                   # dynamics w/ pre-t0
+        popt_d, _ = curve_fit(exp_decay, self.delays[self.delays &gt; 1.0],
+                              dyn[self.delays &gt; 1.0], p0=[dyn.min(), 10, 0])
+        # plain exponential: pump-probe rise ~ pulse cross-correlation,
+        # so unlike TRPL no IRF convolution is needed
+
+# once per stack: sigma(t) -&gt; MSD -&gt; D
+slope, icpt = np.polyfit(delays[ok], sigmas[ok]**2 - sigmas[ok].min()**2, 1)
+D = slope / 2</code></pre>
   </details>
-  <p class="filelink">Full runnable script: <a href="https://github.com/moonriver366/tmdc-data-processing-tutorial/blob/main/examples/07_interactive_map_viewer.py">examples/07_interactive_map_viewer.py</a></p>
+  <p class="filelink">Full script: <a href="https://github.com/moonriver366/data-processing-101/blob/main/examples/3_transient_reflectance/03_ta_map_viewer_full_analysis.py">examples/3_transient_reflectance/03_ta_map_viewer_full_analysis.py</a></p>
 </section>
 
 </main>
-<footer>Synthetic-data tutorial · <a href="https://github.com/moonriver366/tmdc-data-processing-tutorial" style="color:var(--accent)">github.com/moonriver366/tmdc-data-processing-tutorial</a></footer>
+<footer>My take, synthetic data only — issues &amp; PRs welcome ·
+  <a href="https://github.com/moonriver366/data-processing-101" style="color:var(--accent)">github.com/moonriver366/data-processing-101</a></footer>
 
 <script>
 "use strict";
@@ -474,7 +716,7 @@ function randn(rng) {
   while (v === 0) v = rng();
   return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
 }
-function erfc(x) { // Abramowitz & Stegun 7.1.26
+function erfc(x) {
   const s = x < 0; x = Math.abs(x);
   const t = 1 / (1 + 0.3275911 * x);
   const y = t * (0.254829592 + t * (-0.284496736 + t * (1.421413741 +
@@ -489,85 +731,368 @@ function argminAbs(arr, v) {
   }
   return best;
 }
+/* polynomial least squares (deg <= 3), x rescaled to [-1,1] for conditioning */
+function polyfitEval(x, y, deg, xEval) {
+  const xm = Math.min(...x), xM = Math.max(...x);
+  const u = x.map(v => 2 * (v - xm) / (xM - xm) - 1);
+  const n = deg + 1;
+  const A = Array.from({ length: n }, () => new Array(n).fill(0));
+  const b = new Array(n).fill(0);
+  for (let k = 0; k < u.length; k++) {
+    const pw = [1]; for (let j = 1; j < 2 * n - 1; j++) pw.push(pw[j - 1] * u[k]);
+    for (let i = 0; i < n; i++) {
+      b[i] += y[k] * pw[i];
+      for (let j = 0; j < n; j++) A[i][j] += pw[i + j];
+    }
+  }
+  for (let c = 0; c < n; c++) {
+    let p = c;
+    for (let r = c + 1; r < n; r++) if (Math.abs(A[r][c]) > Math.abs(A[p][c])) p = r;
+    const tmp = A[c]; A[c] = A[p]; A[p] = tmp;
+    const tb = b[c]; b[c] = b[p]; b[p] = tb;
+    for (let r = c + 1; r < n; r++) {
+      const f = A[r][c] / A[c][c];
+      for (let j = c; j < n; j++) A[r][j] -= f * A[c][j];
+      b[r] -= f * b[c];
+    }
+  }
+  const coef = new Array(n).fill(0);
+  for (let r = n - 1; r >= 0; r--) {
+    let s = b[r];
+    for (let j = r + 1; j < n; j++) s -= A[r][j] * coef[j];
+    coef[r] = s / A[r][r];
+  }
+  return xEval.map(v => {
+    const uu = 2 * (v - xm) / (xM - xm) - 1;
+    let s = 0, pw = 1;
+    for (let i = 0; i < n; i++) { s += coef[i] * pw; pw *= uu; }
+    return s;
+  });
+}
+/* minimal complex ops for the TMM demo */
+const C = {
+  mul: (a, b) => [a[0] * b[0] - a[1] * b[1], a[0] * b[1] + a[1] * b[0]],
+  add: (a, b) => [a[0] + b[0], a[1] + b[1]],
+  sub: (a, b) => [a[0] - b[0], a[1] - b[1]],
+  div: (a, b) => {
+    const d = b[0] * b[0] + b[1] * b[1];
+    return [(a[0] * b[0] + a[1] * b[1]) / d, (a[1] * b[0] - a[0] * b[1]) / d];
+  },
+  sqrt: (a) => {
+    const r = Math.hypot(a[0], a[1]), th = Math.atan2(a[1], a[0]);
+    return [Math.sqrt(r) * Math.cos(th / 2), Math.sqrt(r) * Math.sin(th / 2)];
+  },
+  cos: (a) => [Math.cos(a[0]) * Math.cosh(a[1]), -Math.sin(a[0]) * Math.sinh(a[1])],
+  sin: (a) => [Math.sin(a[0]) * Math.cosh(a[1]), Math.cos(a[0]) * Math.sinh(a[1])],
+  abs2: (a) => a[0] * a[0] + a[1] * a[1],
+};
 const PLOT_CFG = { displayModeBar: false, responsive: true };
 const FONT = { family: "Segoe UI, system-ui, sans-serif", size: 12 };
 function baseLayout(extra) {
   return Object.assign({
     font: FONT, margin: { l: 55, r: 15, t: 30, b: 45 },
     paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "#fff",
-    showlegend: true, legend: { orientation: "h", y: 1.12 }
+    showlegend: true, legend: { orientation: "h", y: 1.13 }
   }, extra);
 }
-function hook(ids, fn) { // wire sliders to an update fn, run once
+function hook(ids, fn) {
   ids.forEach(id => document.getElementById(id).addEventListener("input", fn));
   fn();
 }
+function setv(id, txt) { document.getElementById(id).textContent = txt; }
 
-/* ---------------- 1: PL two-peak ---------------- */
+/* ---------------- 1.1 axis calibration ---------------- */
 try { (function () {
-  const wl = linspace(700, 820, 480);
-  const lor = (x, A, c, g) => A * g * g / ((x - c) * (x - c) + g * g);
-  hook(["s1-at", "s1-gx", "s1-nz"], function () {
-    const At = +document.getElementById("s1-at").value;
-    const gx = +document.getElementById("s1-gx").value;
-    const nz = +document.getElementById("s1-nz").value;
-    document.getElementById("s1-at-v").textContent = At + " cts";
-    document.getElementById("s1-gx-v").textContent = gx.toFixed(1) + " nm";
-    document.getElementById("s1-nz-v").textContent = nz.toFixed(1) + "×";
-    const rng = mulberry32(7);
-    const x0 = wl.map(x => lor(x, 1800, 750, gx));
-    const tr = wl.map(x => lor(x, At, 764, 6.5));
-    const model = wl.map((_, i) => x0[i] + tr[i]);
-    const data = model.map(m => m + nz * (Math.sqrt(Math.max(m, 1)) + 8) * randn(rng));
-    Plotly.react("s1-plot", [
-      { x: wl, y: data, mode: "markers", marker: { size: 3, color: "#9aa2b1" }, name: "data (synthetic)" },
-      { x: wl, y: model, mode: "lines", line: { color: "#111", width: 2 }, name: "sum" },
-      { x: wl, y: x0, mode: "lines", line: { color: "#dc2626", dash: "dash" }, name: "X⁰ (750 nm)" },
-      { x: wl, y: tr, mode: "lines", line: { color: "#059669", dash: "dash" }, name: "trion (764 nm)" }
+  hook(["cal-na", "cal-mag"], function () {
+    const NA = +document.getElementById("cal-na").value;
+    const M = +document.getElementById("cal-mag").value;
+    setv("cal-na-v", NA.toFixed(2));
+    setv("cal-mag-v", M + "×");
+    const umpp = 16 / M;
+    const spot = 0.51 * 0.750 / NA;
+    setv("cal-umpp", umpp.toFixed(3));
+    setv("cal-spot", spot.toFixed(2));
+    setv("cal-spotpx", (spot / umpp).toFixed(1));
+    setv("cal-thmax", "±" + (Math.asin(NA) * 180 / Math.PI).toFixed(1));
+    const px = linspace(0, 199, 200);
+    const c = 99.5, R = 92;
+    const th = px.map(p => {
+      const s = Math.max(-0.999, Math.min(0.999, NA * (p - c) / R));
+      return Math.asin(s) * 180 / Math.PI;
+    });
+    const lin = px.map(p => (p - c) / R * Math.asin(NA) * 180 / Math.PI);
+    Plotly.react("cal-plot", [
+      { x: px, y: th, mode: "lines", line: { color: "#7c3aed", width: 2 }, name: "true angle axis: asin(NA·r/R)" },
+      { x: px, y: lin, mode: "lines", line: { color: "#9aa2b1", dash: "dot" }, name: "naive linear-in-θ (wrong near the edge)" }
     ], baseLayout({
-      xaxis: { title: { text: "wavelength (nm)" }, range: [715, 805] },
-      yaxis: { title: { text: "counts (baseline-corrected)" } }
+      xaxis: { title: { text: "camera pixel (back focal plane)" } },
+      yaxis: { title: { text: "emission angle (deg)" } }
     }), PLOT_CFG);
   });
 })(); } catch (e) { console.error(e); }
 
-/* ---------------- 2: saturation ---------------- */
+/* ---------------- 1.2 does it disperse ---------------- */
 try { (function () {
-  const P = linspace(Math.log10(0.1), Math.log10(300), 28).map(v => Math.pow(10, v)); // uW
-  const hill = (p, Imax, n, K) => Imax * Math.pow(p, n) / (Math.pow(K, n) + Math.pow(p, n));
-  hook(["s2-n", "s2-k"], function () {
-    const n = +document.getElementById("s2-n").value;
-    const K = +document.getElementById("s2-k").value;
-    document.getElementById("s2-n-v").textContent = n.toFixed(2);
-    document.getElementById("s2-k-v").textContent = K + " µW";
-    const rng = mulberry32(11);
-    const Imax = 5e4;
-    const I = P.map(p => hill(p, Imax, n, K) * (1 + 0.05 * randn(rng)));
-    const logp = P.map(p => Math.log10(p));
-    const d = I.map((_, i) => {
-      const lo = Math.max(i - 1, 0), hi = Math.min(i + 1, I.length - 1);
-      return (I[hi] - I[lo]) / (logp[hi] - logp[lo]);
+  const nA = 81, nE = 150;
+  const theta = linspace(-30, 30, nA);
+  const energy = linspace(1.62, 1.78, nE);
+  hook(["disp-c"], function () {
+    const c = +document.getElementById("disp-c").value / 1000;
+    setv("disp-c-v", (c * 1000).toFixed(0) + " meV");
+    const E0 = 1.68;
+    const s30 = Math.sin(30 * Math.PI / 180);
+    const Eres = theta.map(th => E0 + c * Math.pow(Math.sin(th * Math.PI / 180) / s30, 2));
+    const z = [];
+    for (let j = 0; j < nE; j++) {
+      const row = new Array(nA);
+      for (let i = 0; i < nA; i++) {
+        const g = 0.006;
+        row[i] = 1 - 0.6 * g * g / (Math.pow(energy[j] - Eres[i], 2) + g * g);
+      }
+      z.push(row);
+    }
+    Plotly.react("disp-plot", [
+      { z: z, x: theta, y: energy, type: "heatmap", colorscale: "Greys", showscale: false },
+      { x: theta, y: Eres, mode: "lines", line: { color: "#7c3aed", dash: "dash", width: 1.5 },
+        name: "feature center vs angle" }
+    ], baseLayout({
+      xaxis: { title: { text: "angle (deg) — collected light cone" } },
+      yaxis: { title: { text: "energy (eV)" } },
+      title: { text: c < 0.005 ? "flat: skip k-space, image real space" :
+               "disperses in the light cone: k-space imaging is mandatory", font: { size: 13 } }
+    }), PLOT_CFG);
+  });
+})(); } catch (e) { console.error(e); }
+
+/* ---------------- 1.3a RC & background ---------------- */
+try { (function () {
+  const nE = 400;
+  const E = linspace(1.55, 1.85, nE);
+  hook(["rc-hasref", "rc-order", "rc-wig"], function () {
+    const hasRef = document.getElementById("rc-hasref").checked;
+    const order = +document.getElementById("rc-order").value;
+    const wig = +document.getElementById("rc-wig").value / 100;
+    setv("rc-order-v", "" + order);
+    setv("rc-wig-v", (wig * 100).toFixed(1) + " %");
+    const rng = mulberry32(2);
+    const base = E.map(e => (1 + 0.6 * Math.exp(-0.5 * Math.pow((e - 1.62) / 0.18, 2))) * (2.2 - 0.5 * e));
+    const wiggle = E.map(e => 1 + wig * Math.sin(2 * Math.PI * (e - 1.55) / 0.11));
+    const Rref = base.map((b, i) => b * wiggle[i] * (1 + 0.003 * randn(rng)));
+    const feat = E.map(e => 1 - 0.12 * 0.008 * 0.008 / (Math.pow(e - 1.70, 2) + 0.008 * 0.008));
+    const Rsam = base.map((b, i) => b * wiggle[i] * feat[i] * (1 + 0.003 * randn(rng)));
+    const truth = feat.map(f => f - 1);
+    const traces = [
+      { x: E, y: truth, mode: "lines", line: { color: "#c9ced8", width: 4 }, name: "true RC" }
+    ];
+    let title;
+    if (hasRef) {
+      const rc = Rsam.map((r, i) => (r - Rref[i]) / Rref[i]);
+      traces.push({ x: E, y: rc, mode: "lines", line: { color: "#2563eb", width: 1.2 }, name: "RC with measured reference" });
+      title = "with an off-sample reference: clean recovery";
+    } else {
+      const xs = [], ys = [];
+      for (let i = 0; i < nE; i++) if (E[i] < 1.67 || E[i] > 1.73) { xs.push(E[i]); ys.push(Rsam[i]); }
+      const B = polyfitEval(xs, ys, order, E);
+      const rc = Rsam.map((r, i) => (r - B[i]) / B[i]);
+      traces.push({ x: E, y: rc, mode: "lines", line: { color: "#dc2626", width: 1.2 },
+                    name: "RC with interpolated background (order " + order + ")" });
+      title = "no reference: the recovered depth depends on the background model";
+    }
+    Plotly.react("rc-plot", traces, baseLayout({
+      xaxis: { title: { text: "energy (eV)" } },
+      yaxis: { title: { text: "RC" } },
+      title: { text: title, font: { size: 13 } },
+      shapes: [{ type: "rect", xref: "x", yref: "paper", x0: 1.67, x1: 1.73, y0: 0, y1: 1,
+                 fillcolor: "rgba(245,158,11,0.07)", line: { width: 0 } }]
+    }), PLOT_CFG);
+  });
+})(); } catch (e) { console.error(e); }
+
+/* ---------------- 1.3b lineshapes ---------------- */
+try { (function () {
+  const E = linspace(1.64, 1.76, 600);
+  hook(["ls-q", "ls-g"], function () {
+    const q = +document.getElementById("ls-q").value;
+    const G = +document.getElementById("ls-g").value / 1000;
+    setv("ls-q-v", q.toFixed(1));
+    setv("ls-g-v", (G * 1000).toFixed(0) + " meV");
+    const E0 = 1.70;
+    const fano = E.map(e => {
+      const eps = 2 * (e - E0) / G;
+      return (q + eps) * (q + eps) / (1 + eps * eps);
     });
-    const guide = P.map(p => hill(P[3], Imax, n, K) * Math.pow(p / P[3], 1));
-    Plotly.react("s2-plot", [
-      { x: P, y: I, mode: "markers", marker: { size: 6, color: "#7c3aed" }, name: "integrated PL" },
-      { x: P, y: P.map(p => hill(p, Imax, n, K)), mode: "lines", line: { color: "#111" }, name: "Hill model" },
-      { x: P, y: guide, mode: "lines", line: { color: "#9aa2b1", dash: "dot" }, name: "slope-1 guide" },
-      { x: P, y: d, mode: "lines+markers", marker: { size: 4 }, line: { color: "#dc2626" },
-        name: "dI/d(log P)", xaxis: "x2", yaxis: "y2" }
+    const fmax = Math.max(...fano.map(Math.abs)) || 1;
+    const lor = E.map(e => (G / 2) * (G / 2) / (Math.pow(e - E0, 2) + (G / 2) * (G / 2)));
+    const sig = G / 2.355;
+    const gau = E.map(e => Math.exp(-0.5 * Math.pow((e - E0) / sig, 2)));
+    let imax = 0;
+    fano.forEach((v, i) => { if (v > fano[imax]) imax = i; });
+    Plotly.react("ls-plot", [
+      { x: E, y: fano.map(v => v / fmax), mode: "lines", line: { color: "#111", width: 2 }, name: "Fano" },
+      { x: E, y: lor, mode: "lines", line: { color: "#dc2626", dash: "dash" }, name: "Lorentzian (same Γ)" },
+      { x: E, y: gau, mode: "lines", line: { color: "#059669", dash: "dot" }, name: "Gaussian (same FWHM)" }
+    ], baseLayout({
+      xaxis: { title: { text: "energy (eV)" } },
+      yaxis: { title: { text: "normalized signal" } },
+      shapes: [
+        { type: "line", xref: "x", yref: "paper", x0: 1.70, x1: 1.70, y0: 0, y1: 1,
+          line: { color: "#9aa2b1", dash: "dot" } },
+        { type: "line", xref: "x", yref: "paper", x0: E[imax], x1: E[imax], y0: 0, y1: 1,
+          line: { color: "#7c3aed", dash: "dash" } }
+      ],
+      title: { text: "dotted grey = true E₀; dashed purple = apparent Fano maximum (offset ~Γ/2q)", font: { size: 12.5 } }
+    }), PLOT_CFG);
+  });
+})(); } catch (e) { console.error(e); }
+
+/* ---------------- 1.3c TMM ---------------- */
+try { (function () {
+  const nE = 300;
+  const E = linspace(1.55, 1.85, nE);
+  function stackR(E_eV, f, tox, withLayer) {
+    const lam = 1239.841984 / E_eV;
+    let m11 = [1, 0], m12 = [0, 0], m21 = [0, 0], m22 = [1, 0];
+    const layers = [];
+    layers.push([[2.1, 0], 10]);
+    if (withLayer) {
+      const denom = [1.70 * 1.70 - E_eV * E_eV, -0.010 * E_eV];
+      const eps = C.add([6.0, 0], C.div([f, 0], denom));
+      layers.push([C.sqrt(eps), 0.6]);
+    }
+    layers.push([[2.1, 0], 10]);
+    layers.push([[1.46, 0], tox]);
+    for (const [n, t] of layers) {
+      const d = C.mul(n, [2 * Math.PI * t / lam, 0]);
+      const c = C.cos(d), s = C.sin(d);
+      const a12 = C.div(C.mul([0, 1], s), n);
+      const a21 = C.mul(C.mul([0, 1], n), s);
+      const n11 = C.add(C.mul(m11, c), C.mul(m12, a21));
+      const n12 = C.add(C.mul(m11, a12), C.mul(m12, c));
+      const n21 = C.add(C.mul(m21, c), C.mul(m22, a21));
+      const n22 = C.add(C.mul(m21, a12), C.mul(m22, c));
+      m11 = n11; m12 = n12; m21 = n21; m22 = n22;
+    }
+    const ns = [3.88, 0.02];
+    const top = C.sub(C.add(m11, C.mul(m12, ns)), C.add(m21, C.mul(m22, ns)));
+    const bot = C.add(C.add(m11, C.mul(m12, ns)), C.add(m21, C.mul(m22, ns)));
+    return C.abs2(C.div(top, bot));
+  }
+  hook(["tmm-f", "tmm-t"], function () {
+    const f = +document.getElementById("tmm-f").value;
+    const tox = +document.getElementById("tmm-t").value;
+    setv("tmm-f-v", f.toFixed(2));
+    setv("tmm-t-v", tox + " nm");
+    const rc = E.map(e => {
+      const R1 = stackR(e, f, tox, true);
+      const R0 = stackR(e, f, tox, false);
+      return (R1 - R0) / R0 * 100;
+    });
+    Plotly.react("tmm-plot", [
+      { x: E, y: rc, mode: "lines", line: { color: "#7c3aed", width: 2 }, name: "RC from TMM" }
+    ], baseLayout({
+      showlegend: false,
+      xaxis: { title: { text: "energy (eV)" } },
+      yaxis: { title: { text: "RC (%)" } },
+      shapes: [
+        { type: "line", xref: "x", yref: "paper", x0: 1.70, x1: 1.70, y0: 0, y1: 1,
+          line: { color: "#9aa2b1", dash: "dot" } },
+        { type: "line", xref: "paper", yref: "y", x0: 0, x1: 1, y0: 0, y1: 0,
+          line: { color: "#c9ced8", width: 1 } }
+      ],
+      title: { text: "the oscillator is symmetric at E₀ (dotted) — the stack makes the lineshape", font: { size: 12.5 } }
+    }), PLOT_CFG);
+  });
+})(); } catch (e) { console.error(e); }
+
+/* ---------------- 1.4 diffusion broadening ---------------- */
+try { (function () {
+  const x = linspace(-4, 4, 321);
+  hook(["dl-ld", "dl-sl"], function () {
+    const LD = +document.getElementById("dl-ld").value;
+    const sL = +document.getElementById("dl-sl").value;
+    setv("dl-ld-v", LD.toFixed(2) + " µm");
+    setv("dl-sl-v", sL.toFixed(2) + " µm");
+    const D = LD * LD, tau = 1.0;
+    const nt = 200;
+    const laser = x.map(v => Math.exp(-0.5 * v * v / (sL * sL)));
+    const pl = x.map(v => {
+      let s = 0;
+      for (let i = 0; i < nt; i++) {
+        const t = 8 * tau * i / (nt - 1);
+        const varr = sL * sL + 2 * D * t;
+        s += Math.exp(-t / tau) / Math.sqrt(varr) * Math.exp(-0.5 * v * v / varr);
+      }
+      return s;
+    });
+    const pmax = Math.max(...pl);
+    const plN = pl.map(v => v / pmax);
+    function msig(y) {
+      let s0 = 0, s1 = 0, s2 = 0;
+      for (let i = 0; i < x.length; i++) { s0 += y[i]; s1 += x[i] * y[i]; }
+      const mu = s1 / s0;
+      for (let i = 0; i < x.length; i++) s2 += (x[i] - mu) * (x[i] - mu) * y[i];
+      return Math.sqrt(s2 / s0);
+    }
+    const mL = msig(laser), mPL = msig(plN);
+    const rec = Math.sqrt(Math.max(mPL * mPL - mL * mL, 0) / 2);
+    setv("dl-out", rec.toFixed(3) + " (truth " + LD.toFixed(2) + ")");
+    Plotly.react("dl-plot", [
+      { x: x, y: laser, mode: "lines", line: { color: "#9aa2b1", width: 2 }, name: "laser profile" },
+      { x: x, y: plN, mode: "lines", line: { color: "#dc2626", width: 2 }, name: "time-integrated PL" }
+    ], baseLayout({
+      xaxis: { title: { text: "position (µm)" } },
+      yaxis: { title: { text: "normalized intensity" } }
+    }), PLOT_CFG);
+  });
+})(); } catch (e) { console.error(e); }
+
+/* ---------------- 1.5 sweep tracking ---------------- */
+try { (function () {
+  const nK = 50, nE = 300;
+  const knob = linspace(0, 1, nK);
+  const energy = linspace(1.62, 1.78, nE);
+  const g2 = (E, A, mu, s) => A * Math.exp(-0.5 * ((E - mu) / s) * ((E - mu) / s));
+  const rng = mulberry32(6);
+  const z = [], comps = [];
+  for (let i = 0; i < nK; i++) {
+    const k = knob[i];
+    const c = { A1: 900 * (1 - 0.8 * k), mu1: 1.712, s1: 0.006,
+                A2: 850 * k, mu2: 1.690 + 0.030 * k, s2: 0.009 };
+    comps.push(c);
+    const row = new Array(nE);
+    for (let j = 0; j < nE; j++) {
+      const m = g2(energy[j], c.A1, c.mu1, c.s1) + g2(energy[j], c.A2, c.mu2, c.s2);
+      row[j] = Math.max(m + Math.sqrt(Math.max(m, 1)) * randn(rng), 0);
+    }
+    z.push(row);
+  }
+  hook(["tr-k"], function () {
+    const ki = +document.getElementById("tr-k").value;
+    setv("tr-k-v", knob[ki].toFixed(2));
+    const c = comps[ki];
+    const specA = energy.map(E => g2(E, c.A1, c.mu1, c.s1));
+    const specB = energy.map(E => g2(E, c.A2, c.mu2, c.s2));
+    Plotly.react("tr-plot", [
+      { z: z, x: energy, y: knob, type: "heatmap", colorscale: "Magma", showscale: false },
+      { x: energy, y: z[ki], mode: "lines", line: { color: "#9aa2b1", width: 1 },
+        name: "spectrum @ knob", xaxis: "x2", yaxis: "y2" },
+      { x: energy, y: specA, mode: "lines", line: { color: "#dc2626", dash: "dash" },
+        name: "peak A", xaxis: "x2", yaxis: "y2" },
+      { x: energy, y: specB, mode: "lines", line: { color: "#0ea5e9", dash: "dash" },
+        name: "peak B", xaxis: "x2", yaxis: "y2" }
     ], baseLayout({
       grid: { rows: 1, columns: 2, pattern: "independent" },
-      xaxis: { type: "log", title: { text: "power (µW)" } },
-      yaxis: { type: "log", title: { text: "PL (counts)" } },
-      xaxis2: { type: "log", title: { text: "power (µW)" } },
-      yaxis2: { title: { text: "dI/d(log₁₀P)" } },
-      shapes: [{ type: "line", xref: "x2", yref: "paper", x0: K, x1: K, y0: 0, y1: 1,
-                 line: { color: "#9aa2b1", dash: "dash" } }]
+      xaxis: { title: { text: "energy (eV)" } },
+      yaxis: { title: { text: "control knob (a.u.)" } },
+      xaxis2: { title: { text: "energy (eV)" }, range: [1.66, 1.76] },
+      yaxis2: { title: { text: "counts" } },
+      shapes: [{ type: "line", xref: "x", yref: "y", x0: energy[0], x1: energy[nE - 1],
+                 y0: knob[ki], y1: knob[ki], line: { color: "#fff", dash: "dash", width: 1.5 } }]
     }), PLOT_CFG);
   });
 })(); } catch (e) { console.error(e); }
 
-/* ---------------- 3: TRPL ---------------- */
+/* ---------------- 2.1 TRPL ---------------- */
 try { (function () {
   const t = linspace(0, 80, 640);
   function convTerm(tv, A, tau, t0, w) {
@@ -580,9 +1105,9 @@ try { (function () {
     const t1 = +document.getElementById("s3-t1").value;
     const t2 = +document.getElementById("s3-t2").value;
     const w = +document.getElementById("s3-w").value;
-    document.getElementById("s3-t1-v").textContent = t1.toFixed(1) + " ns";
-    document.getElementById("s3-t2-v").textContent = t2.toFixed(1) + " ns";
-    document.getElementById("s3-w-v").textContent = w.toFixed(2) + " ns";
+    setv("s3-t1-v", t1.toFixed(1) + " ns");
+    setv("s3-t2-v", t2.toFixed(1) + " ns");
+    setv("s3-w-v", w.toFixed(2) + " ns");
     const rng = mulberry32(3);
     const t0 = 8, A1 = 4000, A2 = 600, y0 = 2;
     const c1 = t.map(tv => convTerm(tv, A1, t1, t0, w));
@@ -603,7 +1128,179 @@ try { (function () {
   });
 })(); } catch (e) { console.error(e); }
 
-/* ---------------- 4: TA chirp ---------------- */
+/* ---------------- 2.4 MSD regimes ---------------- */
+try { (function () {
+  const L = 12, nx = 161, tEnd = 10, nt = 501;
+  const x = linspace(-L / 2, L / 2, nx);
+  const dx = x[1] - x[0], dt = tEnd / (nt - 1);
+  const nSnap = 41;
+  function simulate(cfg) {
+    const tau = 5.0;
+    let n = x.map(v => (cfg.n0 || 1) * Math.exp(-0.5 * v * v / (0.8 * 0.8)));
+    let nR = null, nL = null;
+    if (cfg.v) { nR = n.map(v => v / 2); nL = n.map(v => v / 2); }
+    const snaps = [], snapT = linspace(0, tEnd, nSnap);
+    let k = 0;
+    for (let i = 0; i < nt; i++) {
+      const t = i * dt;
+      if (cfg.v) n = nR.map((v, j) => v + nL[j]);
+      if (k < nSnap && t >= snapT[k] - 1e-9) { snaps.push(n.slice()); k++; }
+      if (cfg.v) {
+        const c = cfg.v * dt / dx;
+        const nR2 = nR.map((v, j) => j > 0 ? v - c * (v - nR[j - 1]) - dt * v / tau : 0);
+        const nL2 = nL.map((v, j) => j < nx - 1 ? v + c * (nL[j + 1] - v) - dt * v / tau : 0);
+        nR = nR2; nL = nL2;
+      } else {
+        const D = cfg.D || 0, g = cfg.gamma || 0;
+        const n2 = n.slice();
+        for (let j = 1; j < nx - 1; j++) {
+          const lap = (n[j - 1] - 2 * n[j] + n[j + 1]) / (dx * dx);
+          n2[j] = Math.max(n[j] + dt * (D * lap - n[j] / tau - g * n[j] * n[j]), 0);
+        }
+        n = n2;
+      }
+    }
+    return { snaps, snapT };
+  }
+  function msig(y) {
+    let s0 = 0, s1 = 0, s2 = 0;
+    for (let i = 0; i < nx; i++) { s0 += y[i]; s1 += x[i] * y[i]; }
+    if (s0 <= 0) return NaN;
+    const mu = s1 / s0;
+    for (let i = 0; i < nx; i++) s2 += (x[i] - mu) * (x[i] - mu) * y[i];
+    return Math.sqrt(s2 / s0);
+  }
+  const regimes = [
+    { name: "diffusion", cfg: { D: 0.10 }, color: "#2563eb" },
+    { name: "ballistic", cfg: { v: 0.25 }, color: "#059669" },
+    { name: "annihilation", cfg: { gamma: 0.8, n0: 4 }, color: "#dc2626" },
+    { name: "saturation", cfg: {}, sat: 0.5, color: "#f59e0b" }
+  ];
+  const results = regimes.map(r => {
+    const { snaps, snapT } = simulate(r.cfg);
+    const detected = snaps.map(p => r.sat ? p.map(v => v / (1 + v / r.sat)) : p);
+    const sig = detected.map(msig);
+    const msd = sig.map(s => s * s - sig[0] * sig[0]);
+    return { snapT, detected, msd };
+  });
+  hook(["msd-reg", "msd-t"], function () {
+    const ri = +document.getElementById("msd-reg").value;
+    const ti = +document.getElementById("msd-t").value;
+    const r = results[ri];
+    setv("msd-t-v", r.snapT[ti].toFixed(2) + " ns");
+    const prof = r.detected[ti];
+    const pmax = Math.max(...r.detected[0]);
+    const traces = [
+      { x: x, y: prof.map(v => v / pmax), mode: "lines",
+        line: { color: regimes[ri].color, width: 2 }, name: "detected profile (norm. to t=0 peak)" },
+      { x: x, y: r.detected[0].map(v => v / pmax), mode: "lines",
+        line: { color: "#c9ced8", width: 1.5 }, name: "profile at t = 0" }
+    ];
+    results.forEach((rr, i) => {
+      traces.push({ x: rr.snapT, y: rr.msd, mode: "lines",
+        line: { color: regimes[i].color, width: i === ri ? 2.5 : 1, dash: i === ri ? "solid" : "dot" },
+        name: regimes[i].name, xaxis: "x2", yaxis: "y2" });
+    });
+    Plotly.react("msd-plot", traces, baseLayout({
+      grid: { rows: 1, columns: 2, pattern: "independent" },
+      xaxis: { title: { text: "x (µm)" }, range: [-5, 5] },
+      yaxis: { title: { text: "normalized signal" } },
+      xaxis2: { title: { text: "time (ns)" } },
+      yaxis2: { title: { text: "MSD = σ² − σ₀² (µm²)" } },
+      legend: { orientation: "h", y: 1.18, font: { size: 10.5 } },
+      shapes: [{ type: "line", xref: "x2", yref: "paper", x0: r.snapT[ti], x1: r.snapT[ti],
+                 y0: 0, y1: 1, line: { color: "#9aa2b1", dash: "dot" } }]
+    }), PLOT_CFG);
+  });
+})(); } catch (e) { console.error(e); }
+
+/* ---------------- 2.5 cascade ---------------- */
+try { (function () {
+  const L = 12, nx = 121, tEnd = 15, nt = 1200;
+  const x = linspace(-L / 2, L / 2, nx);
+  const dt = tEnd / (nt - 1);
+  function run(pump) {
+    const tauH = 1.0, tauL = 6.0, k = 2.0, Nsat = 1.0;
+    const nH = x.map(v => pump * Math.exp(-0.5 * v * v / (0.8 * 0.8)));
+    const nL = x.map(() => 0);
+    const Hint = new Array(nx).fill(0), Lint = new Array(nx).fill(0);
+    const tArr = [], LcArr = [], LwArr = [];
+    const ic = argminAbs(x, 0), iw = argminAbs(x, 1.6);
+    for (let i = 0; i < nt; i++) {
+      if (i % 12 === 0) { tArr.push(i * dt); LcArr.push(nL[ic]); LwArr.push(nL[iw]); }
+      for (let j = 0; j < nx; j++) {
+        const tr = k * nH[j] * Math.max(1 - nL[j] / Nsat, 0);
+        const dH = -nH[j] / tauH - tr;
+        const dL = -nL[j] / tauL + tr;
+        nH[j] = Math.max(nH[j] + dt * dH, 0);
+        nL[j] = Math.max(nL[j] + dt * dL, 0);
+        Hint[j] += nH[j] / tauH * dt;
+        Lint[j] += nL[j] / tauL * dt;
+      }
+    }
+    return { Hint, Lint, tArr, LcArr, LwArr };
+  }
+  hook(["cas-p"], function () {
+    const pump = +document.getElementById("cas-p").value;
+    setv("cas-p-v", pump.toFixed(1) + "×");
+    const r = run(pump);
+    const hm = Math.max(...r.Hint), lm = Math.max(...r.Lint);
+    const laser = x.map(v => Math.exp(-0.5 * v * v / (0.8 * 0.8)));
+    const lcm = Math.max(...r.LcArr, 1e-12), lwm = Math.max(...r.LwArr, 1e-12);
+    Plotly.react("cas-plot", [
+      { x: x, y: laser, mode: "lines", line: { color: "#c9ced8", width: 2 }, name: "laser" },
+      { x: x, y: r.Hint.map(v => v / hm), mode: "lines", line: { color: "#2563eb", width: 2 }, name: "species H (high E)" },
+      { x: x, y: r.Lint.map(v => v / lm), mode: "lines", line: { color: "#dc2626", width: 2 }, name: "species L (low E)" },
+      { x: r.tArr, y: r.LcArr.map(v => v / lcm), mode: "lines",
+        line: { color: "#dc2626" }, name: "L at center", xaxis: "x2", yaxis: "y2" },
+      { x: r.tArr, y: r.LwArr.map(v => v / lwm), mode: "lines",
+        line: { color: "#dc2626", dash: "dash" }, name: "L in the wing", xaxis: "x2", yaxis: "y2" }
+    ], baseLayout({
+      grid: { rows: 1, columns: 2, pattern: "independent" },
+      xaxis: { title: { text: "x (µm)" }, range: [-5, 5] },
+      yaxis: { title: { text: "normalized integrated emission" } },
+      xaxis2: { title: { text: "time (ns)" } },
+      yaxis2: { title: { text: "normalized n_L(t)" } },
+      legend: { orientation: "h", y: 1.18, font: { size: 10.5 } }
+    }), PLOT_CFG);
+  });
+})(); } catch (e) { console.error(e); }
+
+/* ---------------- 3.1 dR/R origins ---------------- */
+try { (function () {
+  const E = linspace(1.65, 1.75, 500);
+  function refl(A, E0, G) {
+    return E.map(e => 0.35 - 0.15 * (e - 1.70) - A * (G / 2) * (G / 2) /
+                 (Math.pow(e - E0, 2) + (G / 2) * (G / 2)));
+  }
+  hook(["dr-b", "dr-s", "dr-w"], function () {
+    const b = +document.getElementById("dr-b").value / 100;
+    const s = +document.getElementById("dr-s").value / 1000;
+    const w = +document.getElementById("dr-w").value / 100;
+    setv("dr-b-v", (b * 100).toFixed(0) + " %");
+    setv("dr-s-v", (s * 1000).toFixed(1) + " meV");
+    setv("dr-w-v", (w * 100).toFixed(0) + " %");
+    const R0 = refl(0.15, 1.70, 0.012);
+    const Ron = refl(0.15 * (1 - b), 1.70 + s, 0.012 * (1 + w));
+    const dr = R0.map((r, i) => (Ron[i] - r) / r * 100);
+    Plotly.react("dr-plot", [
+      { x: E, y: R0, mode: "lines", line: { color: "#111", width: 1.8 }, name: "pump off R₀" },
+      { x: E, y: Ron, mode: "lines", line: { color: "#dc2626", dash: "dash", width: 1.4 }, name: "pump on" },
+      { x: E, y: dr, mode: "lines", line: { color: "#7c3aed", width: 2 },
+        name: "dR/R₀ (%)", xaxis: "x2", yaxis: "y2" }
+    ], baseLayout({
+      grid: { rows: 1, columns: 2, pattern: "independent" },
+      xaxis: { title: { text: "energy (eV)" } },
+      yaxis: { title: { text: "reflectance" } },
+      xaxis2: { title: { text: "energy (eV)" } },
+      yaxis2: { title: { text: "dR/R₀ (%)" } },
+      shapes: [{ type: "line", xref: "x2", yref: "y2", x0: E[0], x1: E[E.length - 1],
+                 y0: 0, y1: 0, line: { color: "#c9ced8", width: 1 } }]
+    }), PLOT_CFG);
+  });
+})(); } catch (e) { console.error(e); }
+
+/* ---------------- 3.2 chirp ---------------- */
 try { (function () {
   const nT = 130, nW = 120;
   const t = linspace(-2, 30, nT), dt = t[1] - t[0];
@@ -612,13 +1309,11 @@ try { (function () {
   hook(["s4-c", "s4-corr"], function () {
     const s = +document.getElementById("s4-c").value;
     const doCorr = document.getElementById("s4-corr").checked;
-    document.getElementById("s4-c-v").textContent = s.toFixed(1) + "×";
-    // t0(lambda): scaled quadratic, centered
+    setv("s4-c-v", s.toFixed(1) + "×");
     let t0 = wl.map(x => s * (-3.8e-5 * x * x + 0.072 * x - 31.6));
     const mean0 = t0.reduce((a, b) => a + b, 0) / nW;
     t0 = t0.map(v => v - mean0);
     const rng = mulberry32(42);
-    // build chirped map z[i][j]
     const z = [];
     for (let i = 0; i < nT; i++) {
       const row = new Array(nW);
@@ -633,7 +1328,6 @@ try { (function () {
       }
       z.push(row);
     }
-    // correction: shift column j by +t0[j] (linear interp on uniform grid)
     let zshow = z;
     if (doCorr && s > 0) {
       zshow = [];
@@ -653,7 +1347,7 @@ try { (function () {
     const corrCut = zshow.map(r => (r[j750] == null ? null : r[j750] * 1e3));
     Plotly.react("s4-plot", [
       { z: zshow, x: wl, y: t, type: "heatmap", colorscale: "RdBu", reversescale: true,
-        zmid: 0, zmin: -1e-3, zmax: 1e-3, showscale: false, name: "ΔR/R" },
+        zmid: 0, zmin: -1e-3, zmax: 1e-3, showscale: false, name: "dR/R" },
       { x: wl, y: t0, mode: "lines", line: { color: "#111", dash: "dash", width: 1.5 },
         name: "t₀(λ) chirp", showlegend: true },
       { x: t, y: rawCut, mode: "lines", line: { color: "#9aa2b1", width: 1.5 },
@@ -666,140 +1360,92 @@ try { (function () {
       xaxis: { title: { text: "wavelength (nm)" } },
       yaxis: { title: { text: "delay (ps)" }, range: [-2, 10] },
       xaxis2: { title: { text: "delay (ps)" }, range: [-2, 30] },
-      yaxis2: { title: { text: "ΔR/R (×10⁻³)" } }
+      yaxis2: { title: { text: "dR/R (×10⁻³)" } }
     }), PLOT_CFG);
   });
 })(); } catch (e) { console.error(e); }
 
-/* ---------------- 5: gate map ---------------- */
+/* ---------------- 3.3 full viewer ---------------- */
 try { (function () {
-  const nG = 61, nE = 300;
-  const gates = linspace(-6, 6, nG);
-  const energy = linspace(1.62, 1.80, nE);
-  const g2 = (E, A, mu, s) => A * Math.exp(-0.5 * ((E - mu) / s) * ((E - mu) / s));
-  // build map once
-  const rng = mulberry32(5);
-  const z = [], comps = [];
-  for (let i = 0; i < nG; i++) {
-    const doping = Math.abs(gates[i]) / 6;
-    const Ax = 1500 * (1 - 0.85 * doping);
-    const At = 1400 * doping;
-    const muT = 1.705 - 0.010 * doping;
-    comps.push({ Ax: Ax, At: At, muT: muT });
-    const row = new Array(nE);
-    for (let j = 0; j < nE; j++) {
-      const m = g2(energy[j], Ax, 1.735, 0.008) + g2(energy[j], At, muT, 0.011);
-      row[j] = Math.max(m + Math.sqrt(Math.max(m, 1)) * randn(rng), 0);
-    }
-    z.push(row);
-  }
-  hook(["s5-vg"], function () {
-    const gi = +document.getElementById("s5-vg").value;
-    document.getElementById("s5-vg-v").textContent = gates[gi].toFixed(1) + " V";
-    const c = comps[gi];
-    const specX = energy.map(E => g2(E, c.Ax, 1.735, 0.008));
-    const specT = energy.map(E => g2(E, c.At, c.muT, 0.011));
-    Plotly.react("s5-plot", [
-      { z: z, x: energy, y: gates, type: "heatmap", colorscale: "Magma", showscale: false },
-      { x: energy, y: z[gi], mode: "lines", line: { color: "#9aa2b1", width: 1 },
-        name: "spectrum @ Vɡ", xaxis: "x2", yaxis: "y2" },
-      { x: energy, y: specX, mode: "lines", line: { color: "#dc2626", dash: "dash" },
-        name: "X⁰", xaxis: "x2", yaxis: "y2" },
-      { x: energy, y: specT, mode: "lines", line: { color: "#0ea5e9", dash: "dash" },
-        name: "trion", xaxis: "x2", yaxis: "y2" }
-    ], baseLayout({
-      grid: { rows: 1, columns: 2, pattern: "independent" },
-      xaxis: { title: { text: "energy (eV)" } },
-      yaxis: { title: { text: "gate voltage (V)" } },
-      xaxis2: { title: { text: "energy (eV)" }, range: [1.65, 1.78] },
-      yaxis2: { title: { text: "PL (counts)" } },
-      shapes: [{ type: "line", xref: "x", yref: "y", x0: energy[0], x1: energy[nE - 1],
-                 y0: gates[gi], y1: gates[gi], line: { color: "#fff", dash: "dash", width: 1.5 } }]
-    }), PLOT_CFG);
-  });
-})(); } catch (e) { console.error(e); }
-
-/* ---------------- 6: polariton dispersion ---------------- */
-try { (function () {
-  const theta = linspace(-35, 35, 200);
-  const EX = 1.735, nEff = 1.8;
-  hook(["s6-d", "s6-g"], function () {
-    const det = +document.getElementById("s6-d").value / 1000;  // eV
-    const twog = +document.getElementById("s6-g").value / 1000; // eV
-    document.getElementById("s6-d-v").textContent = (det * 1000).toFixed(0) + " meV";
-    document.getElementById("s6-g-v").textContent = (twog * 1000).toFixed(0) + " meV";
-    const Ec0 = EX + det;
-    const Ec = theta.map(th => {
-      const s = Math.sin(th * Math.PI / 180) / nEff;
-      return Ec0 / Math.sqrt(1 - s * s);
-    });
-    const lp = [], up = [], cph = [], cex = [];
-    for (let i = 0; i < theta.length; i++) {
-      const d = Ec[i] - EX;
-      const Om = Math.sqrt(d * d + twog * twog);
-      const mid = 0.5 * (Ec[i] + EX);
-      lp.push(mid - 0.5 * Om); up.push(mid + 0.5 * Om);
-      cph.push(0.5 * (1 - d / Om)); cex.push(0.5 * (1 + d / Om));
-    }
-    Plotly.react("s6-plot", [
-      { x: theta, y: lp, mode: "lines", line: { color: "#dc2626", width: 2.5 }, name: "LP" },
-      { x: theta, y: up, mode: "lines", line: { color: "#2563eb", width: 2.5 }, name: "UP" },
-      { x: theta, y: Ec, mode: "lines", line: { color: "#9aa2b1", dash: "dash" }, name: "cavity Eᴄ(θ)" },
-      { x: theta, y: theta.map(() => EX), mode: "lines",
-        line: { color: "#9aa2b1", dash: "dot" }, name: "exciton Eₓ" },
-      { x: theta, y: cph, mode: "lines", line: { color: "#dc2626" },
-        name: "LP photon |C|²", xaxis: "x2", yaxis: "y2" },
-      { x: theta, y: cex, mode: "lines", line: { color: "#2563eb" },
-        name: "LP exciton |X|²", xaxis: "x2", yaxis: "y2" }
-    ], baseLayout({
-      grid: { rows: 1, columns: 2, pattern: "independent" },
-      xaxis: { title: { text: "angle (deg)" } },
-      yaxis: { title: { text: "energy (eV)" }, range: [1.63, 1.88] },
-      xaxis2: { title: { text: "angle (deg)" } },
-      yaxis2: { title: { text: "Hopfield fraction" }, range: [0, 1] }
-    }), PLOT_CFG);
-  });
-})(); } catch (e) { console.error(e); }
-
-/* ---------------- 7: interactive viewer ---------------- */
-try { (function () {
-  const nT = 40, nY = 80, nW = 100;
-  const delays = linspace(0, 40, nT);
-  const yUm = linspace(-8, 8, nY);
+  const nT = 45, nY = 80, nW = 100;
+  const delays = [];
+  for (let i = 0; i < 8; i++) delays.push(-5 + i * (4.5 / 7));
+  for (let i = 0; i < 37; i++) delays.push(60 * i / 36);
+  // field of view must stay much wider than the spot at the last delay
+  // you intend to fit — truncation biases every sigma estimate
+  const yUm = linspace(-12, 12, nY);
   const wl = linspace(700, 800, nW);
-  const D = 0.35, sig0 = 1.2, tau = 12;
+  const D = 0.35, SIG0 = 1.2, tau = 12, NOISE = 1.0e-5;
   const rng = mulberry32(1);
-  // stack[i][iy][iw]
   const stack = [];
   for (let i = 0; i < nT; i++) {
-    const sig2 = sig0 * sig0 + 2 * D * delays[i];
-    const amp = Math.exp(-delays[i] / tau) * 1e-3;
+    const t = delays[i];
     const frame = [];
     for (let iy = 0; iy < nY; iy++) {
-      const sp = Math.exp(-0.5 * yUm[iy] * yUm[iy] / sig2);
       const row = new Array(nW);
       for (let iw = 0; iw < nW; iw++) {
-        const spec = -Math.exp(-0.5 * ((wl[iw] - 750) / 8) * ((wl[iw] - 750) / 8));
-        row[iw] = amp * sp * spec + 2.5e-5 * randn(rng);
+        let sig = 0;
+        if (t >= 0) {
+          const varr = SIG0 * SIG0 + 2 * D * t;
+          const sp = Math.exp(-0.5 * yUm[iy] * yUm[iy] / varr) * Math.sqrt(SIG0 * SIG0 / varr);
+          const spec = -Math.exp(-0.5 * ((wl[iw] - 750) / 8) * ((wl[iw] - 750) / 8));
+          sig = Math.exp(-t / tau) * sp * spec * 2e-3;
+        }
+        row[iw] = sig + NOISE * randn(rng);
       }
       frame.push(row);
     }
     stack.push(frame);
   }
+  const j750 = argminAbs(wl, 750);
+  // FWHM-based sigma of the dip: robust, no fitting; gate on amplitude
+  // (a "fit" to noise returns a confident garbage sigma)
+  function dipSigma(prof) {
+    const neg = prof.map(v => -v);
+    const sm = neg.map((v, k) => {
+      const a = neg[Math.max(k - 1, 0)], b = neg[Math.min(k + 1, nY - 1)];
+      return (a + v + b) / 3;
+    });
+    let imax = 0;
+    for (let k = 1; k < nY; k++) if (sm[k] > sm[imax]) imax = k;
+    const amp = sm[imax];
+    if (amp < 8 * NOISE) return null;
+    const half = amp / 2;
+    let iL = imax, iR = imax;
+    while (iL > 0 && sm[iL] > half) iL--;
+    while (iR < nY - 1 && sm[iR] > half) iR++;
+    if (iL === 0 || iR === nY - 1) return null;
+    const xL = yUm[iL] + (half - sm[iL]) / (sm[iL + 1] - sm[iL]) * (yUm[iL + 1] - yUm[iL]);
+    const xR = yUm[iR - 1] + (half - sm[iR - 1]) / (sm[iR] - sm[iR - 1]) * (yUm[iR] - yUm[iR - 1]);
+    return { sigma: (xR - xL) / 2.355, amp: amp, mu: yUm[imax] };
+  }
+  const sigRes = delays.map((t, i) => (t < 0.3) ? null : dipSigma(stack[i].map(r => r[j750])));
+  const okI = sigRes.map((v, i) => (v && delays[i] > 0.5) ? i : -1).filter(i => i >= 0);
+  const sig2 = sigRes.map(v => v ? v.sigma * v.sigma : NaN);
+  const s2min = Math.min.apply(null, okI.map(i => sig2[i]));
+  // amplitude-weighted linear fit: late weak frames have noisier sigma,
+  // and sigma^2 scatter biases an unweighted fit upward
+  let sw = 0, sx = 0, sy = 0, sxx = 0, sxy = 0;
+  okI.forEach(i => {
+    const W = sigRes[i].amp, X = delays[i], Y = sig2[i] - s2min;
+    sw += W; sx += W * X; sy += W * Y; sxx += W * X * X; sxy += W * X * Y;
+  });
+  const slope = (sw * sxy - sx * sy) / (sw * sxx - sx * sx);
+  const icpt = (sy - slope * sx) / sw;
+
   let curY = 0.0, curWl = 750.0;
   const slider = document.getElementById("s7-t");
-
   function redraw() {
     const it = +slider.value;
-    document.getElementById("s7-t-v").textContent = delays[it].toFixed(1) + " ps";
+    setv("s7-t-v", delays[it].toFixed(1) + " ps");
     const iy = argminAbs(yUm, curY), iw = argminAbs(wl, curWl);
     const frame = stack[it];
     Plotly.react("s7-map", [
       { z: frame, x: wl, y: yUm, type: "heatmap", colorscale: "RdBu",
-        zmin: -1e-3, zmax: 1e-3, showscale: true,
-        colorbar: { title: { text: "ΔR/R" }, thickness: 12 } }
+        zmin: -2e-3, zmax: 2e-3, showscale: true,
+        colorbar: { title: { text: "dR/R" }, thickness: 12 } }
     ], baseLayout({
-      showlegend: false,
+      showlegend: false, margin: { l: 55, r: 15, t: 30, b: 40 },
       title: { text: "t = " + delays[it].toFixed(1) + " ps — click to move crosshair", font: { size: 13 } },
       xaxis: { title: { text: "wavelength (nm)" } },
       yaxis: { title: { text: "y (µm)" } },
@@ -810,22 +1456,66 @@ try { (function () {
           line: { color: "#111", dash: "dash", width: 1 } }
       ]
     }), PLOT_CFG);
-    Plotly.react("s7-spec", [
-      { x: wl, y: frame[iy], mode: "lines", line: { color: "#059669" }, name: "spectral cut" }
-    ], baseLayout({
-      showlegend: false, margin: { l: 55, r: 10, t: 28, b: 40 },
-      title: { text: "spectral cut @ y = " + yUm[iy].toFixed(1) + " µm", font: { size: 12 } },
-      xaxis: { title: { text: "wavelength (nm)" } }, yaxis: { title: { text: "ΔR/R" } }
+
+    const prof = frame.map(r => r[iw]);
+    const traces1 = [{ x: yUm, y: prof, mode: "markers", marker: { size: 3, color: "#9aa2b1" }, name: "cut" }];
+    let title1 = "spatial cut (dip below noise gate — no fit)";
+    if (delays[it] >= 0.3) {
+      const res = dipSigma(prof);
+      if (res) {
+        const sg = res.sigma, mu = res.mu, amp = -res.amp;
+        traces1.push({ x: yUm, y: yUm.map(v => amp * Math.exp(-0.5 * (v - mu) * (v - mu) / (sg * sg))),
+                       mode: "lines", line: { color: "#dc2626", width: 1.8 }, name: "Gaussian (FWHM)" });
+        title1 = "spatial cut: σ = " + sg.toFixed(2) + " µm";
+      }
+    }
+    Plotly.react("s7-spat", traces1, baseLayout({
+      showlegend: false, margin: { l: 50, r: 8, t: 28, b: 40 },
+      title: { text: title1, font: { size: 12 } },
+      xaxis: { title: { text: "y (µm)" } }, yaxis: { title: { text: "dR/R" } }
     }), PLOT_CFG);
-    Plotly.react("s7-dyn", [
-      { x: delays, y: stack.map(f => f[iy][iw]), mode: "lines+markers",
-        marker: { size: 4 }, line: { color: "#2563eb" }, name: "dynamics" }
+
+    const dyn = stack.map(f => f[iy][iw]);
+    const traces2 = [{ x: delays, y: dyn, mode: "markers", marker: { size: 4, color: "#2563eb" }, name: "dynamics" }];
+    const fitI = delays.map((tv, i) => (tv > 1.0 && dyn[i] < -8 * NOISE) ? i : -1).filter(i => i >= 0);
+    let title2 = "dynamics at crosshair (incl. pre-t₀)";
+    if (fitI.length > 5) {
+      let fx = 0, fy = 0, fxx = 0, fxy = 0;
+      fitI.forEach(i => { const X = delays[i], Y = Math.log(-dyn[i]); fx += X; fy += Y; fxx += X * X; fxy += X * Y; });
+      const m = fitI.length;
+      const bslope = (m * fxy - fx * fy) / (m * fxx - fx * fx);
+      const bicpt = (fy - bslope * fx) / m;
+      if (bslope < 0) {
+        const tl = linspace(1, 60, 80);
+        traces2.push({ x: tl, y: tl.map(T => -Math.exp(bicpt + bslope * T)), mode: "lines",
+                       line: { color: "#dc2626", width: 1.8 }, name: "exp fit" });
+        title2 = "dynamics: τ = " + (-1 / bslope).toFixed(1) + " ps (plain exp — no IRF needed)";
+      }
+    }
+    Plotly.react("s7-dyn", traces2, baseLayout({
+      showlegend: false, margin: { l: 50, r: 8, t: 28, b: 40 },
+      title: { text: title2, font: { size: 12 } },
+      xaxis: { title: { text: "delay (ps)" } }, yaxis: { title: { text: "dR/R" } },
+      shapes: [
+        { type: "line", xref: "x", yref: "paper", x0: delays[it], x1: delays[it], y0: 0, y1: 1,
+          line: { color: "#9aa2b1", dash: "dot" } },
+        { type: "line", xref: "x", yref: "paper", x0: 0, x1: 0, y0: 0, y1: 1,
+          line: { color: "#c9ced8", width: 1 } }
+      ]
+    }), PLOT_CFG);
+
+    const msdX = okI.map(i => delays[i]), msdY = okI.map(i => sig2[i] - s2min);
+    const tl = linspace(0, 60, 40);
+    Plotly.react("s7-msd", [
+      { x: msdX, y: msdY, mode: "markers", marker: { size: 4, color: "#059669" }, name: "MSD" },
+      { x: tl, y: tl.map(T => slope * T + icpt), mode: "lines",
+        line: { color: "#111", dash: "dash", width: 1.2 }, name: "linear fit" }
     ], baseLayout({
-      showlegend: false, margin: { l: 55, r: 10, t: 28, b: 40 },
-      title: { text: "dynamics @ crosshair", font: { size: 12 } },
-      xaxis: { title: { text: "delay (ps)" } }, yaxis: { title: { text: "ΔR/R" } },
-      shapes: [{ type: "line", xref: "x", yref: "paper", x0: delays[it], x1: delays[it],
-                 y0: 0, y1: 1, line: { color: "#9aa2b1", dash: "dot" } }]
+      showlegend: false, margin: { l: 50, r: 8, t: 28, b: 40 },
+      title: { text: "MSD: D = " + (slope / 2).toFixed(2) + " µm²/ps (truth " + D + ")", font: { size: 12 } },
+      xaxis: { title: { text: "delay (ps)" } }, yaxis: { title: { text: "σ² − σ₀² (µm²)" } },
+      shapes: [{ type: "line", xref: "x", yref: "paper", x0: delays[it], x1: delays[it], y0: 0, y1: 1,
+                 line: { color: "#9aa2b1", dash: "dot" } }]
     }), PLOT_CFG);
   }
   slider.addEventListener("input", redraw);

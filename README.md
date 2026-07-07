@@ -1,112 +1,93 @@
-# TMDC Optical Spectroscopy — Data Processing Tutorial
+# Data Processing 101
 
-A self-contained tutorial distilled from the data-processing code used in our
-lab for optical spectroscopy of 2D semiconductors (TMDCs): gated PL, power
-dependence, time-resolved PL, transient absorption microscopy, and
-exciton-polariton dispersion analysis.
+My take on going from raw optical-spectroscopy files to numbers you can
+trust. This is not a textbook — it's the working logic I follow when a new
+sample lands on the optical table, written down with runnable code. If you
+disagree with any of it, that's what issues and PRs are for; several points
+below are genuinely open questions and marked as such.
 
-**No real measurement data is included.** Every example generates its own
-synthetic data with known ground truth, so you can check that each processing
-step actually recovers what was put in.
+Everything here uses **synthetic data with known ground truth** — no real
+measurements — so every processing step can be checked against what was put
+in. That's also rule zero: *if a pipeline can't recover known parameters
+from synthetic data, it has no business touching real data.*
 
-**Interactive version:** open [`docs/index.html`](docs/index.html) in a
-browser (or the GitHub Pages site) for live, slider-driven versions of every
-figure alongside the Python code.
-
----
-
-## The processing pipeline, conceptually
-
-Across all our experiments the pipeline is the same five stages:
-
-```
-   raw files          calibrate            preprocess              fit                 visualize
-┌─────────────┐   ┌────────────────┐   ┌────────────────┐   ┌────────────────┐   ┌────────────────┐
-│ .asc / .csv │   │ pixel → nm/eV  │   │ dark/baseline  │   │ bounded        │   │ heatmap +      │
-│ .txt stacks │ → │ pixel → angle  │ → │ subtraction,   │ → │ physics-model  │ → │ crosshair +    │
-│ metadata in │   │ E = 1240/λ     │   │ NaN-aware      │   │ least squares  │   │ linecuts +     │
-│  filenames  │   │ power calib    │   │ smoothing,     │   │ + quality gate │   │ sliders        │
-└─────────────┘   └────────────────┘   │ chirp corr.    │   └────────────────┘   └────────────────┘
-                                       └────────────────┘
-```
-
-1. **Load & parse.** Data arrives as plain-text arrays (Andor `.asc` spectra,
-   tab-delimited TA stacks, TCSPC histograms). Sweep metadata lives in
-   filenames with a compact convention — `P1p5uW` = 1.5 µW, `Vfm2p5` =
-   front gate −2.5 V (`p` = decimal point, `m` = minus) — parsed with regex.
-   Measurement sessions are timestamped folders; the analysis script is
-   copied into the folder it analyzes, so every dataset keeps a frozen,
-   working copy of its own processing.
-
-2. **Calibrate.** Pixel → wavelength is a two-point linear map; wavelength →
-   energy is `E[eV] = 1239.84 / λ[nm]`; camera row → emission angle (k-space)
-   is another linear map. Excitation power comes from interpolating a
-   measured calibration table (filter-wheel angle → power).
-
-3. **Preprocess.** Dark counts / baseline are estimated from signal-free
-   regions (tail wavelengths, pre-pulse time bins) — often per row.
-   Noise floors use the median absolute deviation (robust to peaks).
-   Maps with missing points are smoothed with **NaN-aware Gaussian
-   filtering** (normalized convolution). Pump-probe maps get **chirp
-   correction**: a polynomial t₀(λ) is fit to the coherent artifact and each
-   wavelength column is re-interpolated onto a common time axis.
-
-4. **Fit physics models with bounded least squares.** All fitting is
-   `scipy.optimize.curve_fit` / `least_squares` with explicit physical bounds
-   and a **quality gate** (SNR, R², parameter sanity) — a bad fit returns
-   `None`/NaN and leaves a gap rather than a garbage point. Sweeps reuse the
-   previous point's fit as the next initial guess. The standard models:
-
-   | Observable | Model |
-   |---|---|
-   | PL spectrum | Gaussian / Lorentzian peaks (exciton X⁰ + trion) fitted in windows, then refined globally |
-   | PL vs power | Hill saturation `I = Imax·Pⁿ/(Kⁿ+Pⁿ) + c`; onset located via `dI/d(log P)` |
-   | TRPL decay | multi-exponential **analytically convolved with a Gaussian IRF** (erfc form); model-free 1/e lifetime as cross-check |
-   | TA transients | exponential decays with rise; spatial Gaussian σ²(t) for diffusion |
-   | Reflectance contrast | `RC = (I_sample − I_bg) / I_bg` |
-   | Polariton dispersion | 2×2 coupled oscillator → LP/UP branches, Rabi splitting 2g, Hopfield fractions; Fano/CMT lineshapes for full spectra |
-
-5. **Visualize interactively.** The signature layout is a **2D heatmap with a
-   click-to-move crosshair and two linecuts** (spectral cut + spatial/time
-   cut), plus a frame slider for 3D stacks — built with pyqtgraph for the
-   instrument-side viewers and matplotlib widgets for quick-look scripts.
-   Diverging colormaps (RdBu) for signed ΔR/R, sequential (viridis/magma)
-   for intensity. Results export to CSV with axes in the header row/column.
+**Interactive version:** [`docs/index.html`](docs/index.html) (or the GitHub
+Pages site) has live, slider-driven versions of most figures next to the
+Python code.
 
 ---
 
-## Examples
+## The logic: a new sample just arrived
 
-Each script is standalone: `python examples/<name>.py` (needs numpy, scipy,
-matplotlib — `pip install -r requirements.txt`).
+The pass I run, in order. Steady-state first — it's cheap, it can't be
+misinterpreted by time-resolution artifacts, and it tells you where to look
+with everything that comes after.
 
-| # | Script | What it teaches |
+### Part 1 — Steady state (linear reflectance & PL)
+
+| § | Question | Script |
 |---|---|---|
-| 01 | [`01_pl_spectrum_two_peak_fit.py`](examples/01_pl_spectrum_two_peak_fit.py) | Baseline correction from signal-free windows, MAD noise floor, windowed Lorentzian fits with quality gates, sequential-then-global two-peak decomposition |
-| 02 | [`02_power_dependence_saturation.py`](examples/02_power_dependence_saturation.py) | Filename-metadata parsing (`P1p5uW`), log-log power laws, Hill saturation fit, NaN-aware dI/d(log P) derivative |
-| 03 | [`03_trpl_irf_convolved_decay.py`](examples/03_trpl_irf_convolved_decay.py) | Analytic IRF-convolved bi-exponential (erfc form), Poisson-weighted fitting, residual diagnostics, model-free 1/e lifetime |
-| 04 | [`04_ta_map_chirp_correction.py`](examples/04_ta_map_chirp_correction.py) | Pump-probe ΔR/R maps, polynomial t₀(λ) chirp model, column-wise re-interpolation (`map_coordinates`), transient + spectral linecuts |
-| 05 | [`05_gate_dependent_pl_map.py`](examples/05_gate_dependent_pl_map.py) | Energy-vs-gate colormaps, NaN-aware Gaussian smoothing, double-Gaussian species tracking (exciton → trion transfer) |
-| 06 | [`06_polariton_dispersion_fit.py`](examples/06_polariton_dispersion_fit.py) | Angle-resolved R(θ,E) maps, per-row ridge extraction, coupled-oscillator fit of both branches, Rabi splitting + Hopfield fractions |
-| 07 | [`07_interactive_map_viewer.py`](examples/07_interactive_map_viewer.py) | The lab's standard interactive viewer: heatmap + crosshair + linecuts + frame slider, with cursor memory |
+| 1.1 | How do I read the raw file and what do the axes mean? Pixel → position (magnification, cross-checked with a diffraction-limited laser spot) or pixel → angle (objective NA sets the edge of k-space) | [`01_reading_asc_and_axis_calibration.py`](examples/1_steady_state/01_reading_asc_and_axis_calibration.py) |
+| 1.2 | Do I need k-space at all? Only if the feature disperses inside the light cone — see the demo on the site | — |
+| 1.3 | What is reflectance contrast, and where does the background come from — measured reference vs interpolated (open question when there's no off-sample region, e.g. a cavity that's everywhere) | [`02_reflectance_contrast_background.py`](examples/1_steady_state/02_reflectance_contrast_background.py) |
+| 1.3 | Which lineshape — Lorentzian, Gaussian, Fano — and how to set initial guesses and bounds so `curve_fit` actually converges | [`03_lineshapes_lorentzian_gaussian_fano.py`](examples/1_steady_state/03_lineshapes_lorentzian_gaussian_fano.py) |
+| 1.3 | Why RC lineshapes look Fano even when the resonance is a plain Lorentz oscillator: interference with the stack (transfer-matrix demo) | [`04_tmm_thin_film_simulation.py`](examples/1_steady_state/04_tmm_thin_film_simulation.py) |
+| 1.4 | What steady-state PL counts actually mean (time-integrated! rep-rate matters, intensity ∝ n₀·τ), and what the spatial profile means (diffusion during the lifetime: σ²_PL = σ²_laser + 2Dτ) | [`05_pl_and_spatial_profile.py`](examples/1_steady_state/05_pl_and_spatial_profile.py) |
+| 1.5 | Sweeping power / temperature / gate: tracking peaks through a sweep with sequential constrained fits, and when that's the wrong thing to do | [`06_parameter_sweep_peak_tracking.py`](examples/1_steady_state/06_parameter_sweep_peak_tracking.py) |
+
+### Part 2 — Time-resolved: TRPL & PL imaging
+
+| § | Question | Script |
+|---|---|---|
+| 2.1–2.2 | What a TCSPC histogram is, what the IRF is, and why to fit the analytic IRF-convolved decay instead of deconvolving | [`01_trpl_irf_convolved_fit.py`](examples/2_time_resolved/01_trpl_irf_convolved_fit.py) |
+| 2.3 | Two ways to a time-resolved spatial profile: point scan (stages + single-pixel detector) vs detector array (sparse pixels + 2D Gaussian fit) | [`02_spatial_profiles_scan_vs_array.py`](examples/2_time_resolved/02_spatial_profiles_scan_vs_array.py) |
+| 2.4 | MSD analysis — and the four mechanisms that broaden a profile (diffusion, ballistic, annihilation, emission saturation), only some of which are transport | [`03_msd_transport_regimes.py`](examples/2_time_resolved/03_msd_transport_regimes.py) |
+| 2.5 | Two species, one cascade: what spectrally-resolved imaging adds — the flat-top/saturation fingerprint vs real transport | [`04_two_species_cascade.py`](examples/2_time_resolved/04_two_species_cascade.py) |
+
+### Part 3 — Time-resolved: transient reflectance (TA)
+
+| § | Question | Script |
+|---|---|---|
+| 3.1 | What actually makes a dR/R signal: amplitude vs shift vs broadening — and why TA is *not* automatically population | [`01_dr_over_r_origins.py`](examples/3_transient_reflectance/01_dr_over_r_origins.py) |
+| 3.2 | Wavelength calibration with long/shortpass filter edges, and chirp correction (polynomial t₀(λ) + column re-interpolation) | [`02_ta_map_chirp_correction.py`](examples/3_transient_reflectance/02_ta_map_chirp_correction.py) |
+| 3.3 | The whole thing in one interactive viewer: map + crosshair + spatial-cut fit + dynamics (with pre-t₀ baseline, plain-exponential fit — and why IRF matters less here than in TRPL) + MSD → D | [`03_ta_map_viewer_full_analysis.py`](examples/3_transient_reflectance/03_ta_map_viewer_full_analysis.py) |
 
 Rendered output of every script is in [`figures/`](figures/).
 
+Planned but deferred: the k-space toolkit (dispersion extraction, coupled-
+oscillator fits, Hopfield analysis). It deserves its own part.
+
 ---
 
-## Habits worth copying
+## Rules I try to follow
 
-- **Synthesize before you analyze.** Every pipeline here is validated on
-  synthetic data with known truth first. If the code can't recover known
-  parameters, it has no business touching real data.
-- **Bound every fit.** Unbounded `curve_fit` on noisy spectra will happily
-  return a 0.001 nm-wide peak. Physical bounds + a quality gate turn silent
-  failures into visible gaps.
-- **Handle NaN as a first-class value.** Skipped sweep points, failed fits,
-  and dead pixels all become NaN and propagate cleanly through normalized
-  convolution and NaN-aware derivatives.
-- **Keep the script with the data.** Copying the analysis script into each
-  measurement folder trades DRY for reproducibility — the exact code that
-  produced a figure is always sitting next to its data.
-- **Prefer analytic convolution over deconvolution.** Fitting an
-  IRF-convolved model is stable; deconvolving noisy counts is not.
+- **Synthesize before you analyze.** Known truth in, known truth out — then
+  real data.
+- **Bound every fit, gate every fit.** Physical bounds plus an SNR/R² gate:
+  a failed fit records NaN and leaves a visible gap, never a silent garbage
+  point. A parameter pinned at its bound means the model or window is wrong.
+- **Look at residuals, not R² alone.** Structure in the residuals means the
+  model is wrong even when the number looks fine.
+- **Time-integrated ≠ instantaneous.** Steady-state PL sees n₀·τ; pulsed
+  excitation at the same average power changes per-pulse density with rep
+  rate.
+- **Broadening ≠ transport, dR/R ≠ population, extremum ≠ resonance
+  position.** The three most tempting shortcuts in this business; Parts 2–3
+  and the Fano section each exist to kill one of them.
+- **Keep the script with the data.** Copy the analysis script into the
+  measurement folder it analyzes. Un-DRY, fully reproducible.
+
+## Running the examples
+
+```
+pip install -r requirements.txt        # numpy, scipy, matplotlib
+python examples/1_steady_state/01_reading_asc_and_axis_calibration.py
+```
+
+Every script is standalone and generates its own data. Script 3.03 (and
+the other viewers) want an interactive matplotlib backend.
+
+---
+
+*Comments, corrections and contributions are all welcome — especially on the
+parts marked as open questions.*
