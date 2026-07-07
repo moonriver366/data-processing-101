@@ -65,7 +65,7 @@ def main():
     _, _, _, _, H_lo, L_lo = simulate_cascade(pump=0.3, N_sat=1.0)
 
     laser = np.exp(-0.5 * x ** 2 / 0.8 ** 2)
-    fig, axes = plt.subplots(1, 3, figsize=(14, 4.4))
+    fig, axes = plt.subplots(1, 4, figsize=(17, 4.2))
 
     # time-integrated profiles = what a spectrally-filtered camera sees
     axes[0].plot(x, laser, color="0.7", lw=2, label="laser")
@@ -96,6 +96,22 @@ def main():
     axes[2].set(xlabel="time (ns)", ylabel="normalized population",
                 title="same species, different positions:\nspatial + temporal beats either alone")
     axes[2].legend(frameon=False, fontsize=8)
+
+    # MSD(t) of each species: L's apparent broadening is saturation, not transport
+    def sigma2(prof):
+        base = np.median(np.concatenate([prof[:8], prof[-8:]]))
+        w = np.clip(prof - base, 0, None)
+        if w.sum() <= 0:
+            return np.nan
+        mu = np.sum(x * w) / np.sum(w)
+        return np.sum((x - mu) ** 2 * w) / np.sum(w)
+    s2H = np.array([sigma2(H[i]) for i in range(len(ts))])
+    s2L = np.array([sigma2(Ls[i]) for i in range(len(ts))])
+    axes[3].plot(ts, s2H - np.nanmin(s2H), "o-", ms=3, color="C0", label="H")
+    axes[3].plot(ts, s2L - np.nanmin(s2L), "s-", ms=3, color="C3", label="L")
+    axes[3].set(xlabel="time (ns)", ylabel="MSD = sigma² - sigma0² (um²)",
+                title="MSD(t): L 'spreads' as its center\nsaturates — no real transport")
+    axes[3].legend(frameon=False, fontsize=8)
 
     fig.tight_layout()
     fig.savefig("s2_04_two_species_cascade.png", dpi=150)

@@ -39,17 +39,24 @@ from matplotlib.widgets import Slider
 
 RNG = np.random.default_rng(seed=1)
 
-D_TRUE, TAU_TRUE, SIG0 = 0.35, 12.0, 1.2   # um^2/ps, ps, um
+D_TRUE, TAU_TRUE, SIG0 = 0.30, 22.0, 1.2   # um^2/ps, ps, um  (long-lived, gentle)
+
+
+def fano_spectral(wl, E0=748.0, gamma=9.0, q=1.4):
+    """Asymmetric Fano dip in wavelength (negative-going ΔR/R feature)."""
+    eps = 2.0 * (wl - E0) / gamma
+    return -((q + eps) ** 2 / (1.0 + eps ** 2)) / (q * q)
 
 
 def make_stack():
     delays = np.concatenate([np.linspace(-5, -0.5, 8),      # pre-t0 baseline
                              np.linspace(0, 5, 21),
-                             np.linspace(5.5, 60, 28)])
+                             np.linspace(5.5, 80, 28)])
     # field of view must stay much wider than the spot at the LAST delay
     # you intend to fit — otherwise truncation biases every sigma estimate
     y_um = np.linspace(-12, 12, 96)
     wl = np.linspace(700, 800, 128)
+    spectral = fano_spectral(wl)                 # Fano lineshape in wavelength
     stack = np.empty((delays.size, y_um.size, wl.size))
     for i, t in enumerate(delays):
         if t < 0:
@@ -57,9 +64,8 @@ def make_stack():
         else:
             var = SIG0 ** 2 + 2 * D_TRUE * t
             spatial = np.exp(-0.5 * y_um ** 2 / var) * (SIG0 ** 2 / var) ** 0.5
-            spectral = -np.exp(-0.5 * ((wl - 750) / 8) ** 2)
             sig = np.exp(-t / TAU_TRUE) * np.outer(spatial, spectral) * 2e-3
-        stack[i] = sig + RNG.normal(0, 1.0e-5, size=(y_um.size, wl.size))
+        stack[i] = sig + RNG.normal(0, 6.0e-6, size=(y_um.size, wl.size))  # less noise
     return delays, y_um, wl, stack
 
 
