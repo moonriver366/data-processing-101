@@ -339,8 +339,8 @@ def k_space_angle_axis(n_px, lo, hi, NA):         <span class="code-cmt"># disk 
       <div class="ctrl">lifetime ratio b <input type="range" id="c14-b" min="0.2" max="5" step="0.1" value="0.4"><span class="val" id="c14-b-v"></span></div>
     </div>
     <div class="prow">
-      <div class="plot" id="c14-a" style="height:300px"></div>
-      <div class="plot" id="c14-b" style="height:300px"></div>
+      <div class="plot" id="c14-p1" style="height:300px"></div>
+      <div class="plot" id="c14-p2" style="height:300px"></div>
     </div>
   </div>
   <p class="note"><b>(2) The spatial profile is not the laser.</b> Whatever is excited moves before it emits;
@@ -575,8 +575,8 @@ def k_space_angle_axis(n_px, lo, hi, NA):         <span class="code-cmt"># disk 
       <div class="ctrl">broaden <input type="range" id="c25a-w" min="0" max="50" step="1" value="0"><span class="val" id="c25a-w-v"></span></div>
     </div>
     <div class="prow">
-      <div class="plot" id="c25a-a" style="height:310px"></div>
-      <div class="plot" id="c25a-b" style="height:310px"></div>
+      <div class="plot" id="c25a-p1" style="height:310px"></div>
+      <div class="plot" id="c25a-p2" style="height:310px"></div>
     </div>
   </div>
   <p class="filelink">Full script:
@@ -764,11 +764,11 @@ try{(function(){
     const a=+document.getElementById("c14-a").value,b=+document.getElementById("c14-b").value;
     sv("c14-a-v",a.toFixed(1));sv("c14-b-v",b.toFixed(1));
     const I1=a,I2=1,t2=1.5,t1=b*t2;
-    Plotly.react("c14-a",[
+    Plotly.react("c14-p1",[
       {x:t,y:t.map(x=>I1*Math.exp(-x/t1)),mode:"lines",line:{color:"#dc2626",width:2},name:"peak 1 (I₁,τ₁)"},
       {x:t,y:t.map(x=>I2*Math.exp(-x/t2)),mode:"lines",line:{color:"#2563eb",width:2},name:"peak 2 (I₂,τ₂)"}
     ],L({margin:{l:52,r:10,t:26,b:42},title:{text:"dynamics",font:{size:12}},xaxis:{title:{text:"time (ns)"}},yaxis:{title:{text:"instantaneous I"}}}),CFG);
-    Plotly.react("c14-b",[
+    Plotly.react("c14-p2",[
       {x:Ecm,y:Ecm.map(e=>g(e,I1,1.66,0.010)+g(e,I2,1.70,0.010)),mode:"lines",line:{color:"#6b3fd4",width:1.4,dash:"dot"},name:"peak-height (∝ I)"},
       {x:Ecm,y:Ecm.map(e=>g(e,I1*t1,1.66,0.010)+g(e,I2*t2,1.70,0.010)),mode:"lines",line:{color:"#111",width:2},name:"time-integrated (∝ I·τ)"}
     ],L({margin:{l:52,r:10,t:26,b:42},title:{text:"integrated ratio a·b = "+(a*b).toFixed(2)+"  (heights a = "+a.toFixed(2)+")",font:{size:11.5}},
@@ -900,11 +900,11 @@ try{(function(){
     const b=+document.getElementById("c25a-b").value/100,s=+document.getElementById("c25a-s").value/1000,w=+document.getElementById("c25a-w").value/100;
     sv("c25a-b-v",(b*100).toFixed(0)+"%");sv("c25a-s-v",(s*1000).toFixed(1)+" meV");sv("c25a-w-v",(w*100).toFixed(0)+"%");
     const R0=refl(0.15,1.70,0.012,fano),Ron=refl(0.15*(1-b),1.70+s,0.012*(1+w),fano);
-    Plotly.react("c25a-a",[
+    Plotly.react("c25a-p1",[
       {x:E,y:R0,mode:"lines",line:{color:"#111",width:1.8},name:"pump off R₀ ("+(fano?"Fano":"Lorentzian dip")+")"},
       {x:E,y:Ron,mode:"lines",line:{color:"#dc2626",dash:"dash",width:1.4},name:"pump on"}
     ],L({margin:{l:52,r:10,t:26,b:42},xaxis:{title:{text:"energy (eV)"}},yaxis:{title:{text:"reflectance"}}}),CFG);
-    Plotly.react("c25a-b",[
+    Plotly.react("c25a-p2",[
       {x:E,y:R0.map((r,i)=>(Ron[i]-r)/r*100),mode:"lines",line:{color:"#6b3fd4",width:2},name:"dR/R₀ (%)"}
     ],L({showlegend:false,margin:{l:52,r:10,t:26,b:42},title:{text:"dR/R₀",font:{size:12}},xaxis:{title:{text:"energy (eV)"}},yaxis:{title:{text:"dR/R₀ (%)"}},
       shapes:[{type:"line",xref:"paper",yref:"y",x0:0,x1:1,y0:0,y1:0,line:{color:"#ccc",width:1}}]}),CFG);
