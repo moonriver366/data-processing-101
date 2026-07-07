@@ -588,7 +588,7 @@ def k_space_angle_axis(n_px, lo, hi, NA):         <span class="code-cmt"># disk 
      <i>shorter</i> than the population lifetime — diffusion drains the point you watch.</p>
   <div class="demo">
     <div class="controls">
-      <div class="ctrl">delay <input type="range" id="c25c-t" min="0" max="44" step="1" value="14"><span class="val" id="c25c-t-v"></span></div>
+      <div class="ctrl">delay <input type="range" id="c25c-t" min="0" max="44" step="1" value="8"><span class="val" id="c25c-t-v"></span></div>
       <div class="ctrl" style="color:var(--muted)">💡 click the map to move the crosshair</div>
     </div>
     <div class="plot" id="c25c-map" style="height:310px"></div>
@@ -930,11 +930,11 @@ try{(function(){
   // track the negative lobe for sigma(t)
   let jNeg=0;for(let k=1;k<nW;k++)if(fanoW[k]<fanoW[jNeg])jNeg=k;
   const j748=jNeg;
-  function dipSigma(prof){const neg=prof.map(v=>-v);const sm=neg.map((v,k)=>{const a=neg[Math.max(k-1,0)],b=neg[Math.min(k+1,nY-1)];return(a+v+b)/3;});let im=0;for(let k=1;k<nY;k++)if(sm[k]>sm[im])im=k;const amp=sm[im];if(amp<8*NOISE)return null;const half=amp/2;let iL=im,iR=im;while(iL>0&&sm[iL]>half)iL--;while(iR<nY-1&&sm[iR]>half)iR++;if(iL===0||iR===nY-1)return null;const xL=yUm[iL]+(half-sm[iL])/(sm[iL+1]-sm[iL])*(yUm[iL+1]-yUm[iL]),xR=yUm[iR-1]+(half-sm[iR-1])/(sm[iR]-sm[iR-1])*(yUm[iR]-yUm[iR-1]);return{sigma:(xR-xL)/2.355,amp:amp,mu:yUm[im]};}
+  function dipSigma(prof){const base=(prof.slice(0,8).concat(prof.slice(-8))).reduce((a,b)=>a+b,0)/16;const sm=prof.map((v,k)=>{const a=prof[Math.max(k-1,0)],b=prof[Math.min(k+1,nY-1)];return(a+v+b)/3-base;});let ia=0;for(let k=1;k<nY;k++)if(Math.abs(sm[k])>Math.abs(sm[ia]))ia=k;const sgn=sm[ia]>=0?1:-1;const p=sm.map(v=>sgn*v);let im=0;for(let k=1;k<nY;k++)if(p[k]>p[im])im=k;const amp=p[im];if(amp<8*NOISE)return null;const half=amp/2;let iL=im,iR=im;while(iL>0&&p[iL]>half)iL--;while(iR<nY-1&&p[iR]>half)iR++;if(iL===0||iR===nY-1)return null;const xL=yUm[iL]+(half-p[iL])/(p[iL+1]-p[iL])*(yUm[iL+1]-yUm[iL]),xR=yUm[iR-1]+(half-p[iR-1])/(p[iR]-p[iR-1])*(yUm[iR]-yUm[iR-1]);return{sigma:(xR-xL)/2.355,amp:sgn*amp,mu:yUm[im],sign:sgn};}
   const sigRes=delays.map((t,i)=>t<0.3?null:dipSigma(stack[i].map(r=>r[j748])));
   const okI=sigRes.map((v,i)=>(v&&delays[i]>0.5)?i:-1).filter(i=>i>=0);
   const sig2=sigRes.map(v=>v?v.sigma*v.sigma:NaN),s2min=Math.min.apply(null,okI.map(i=>sig2[i]));
-  let sw=0,sx=0,sy=0,sxx=0,sxy=0;okI.forEach(i=>{const W=sigRes[i].amp,X=delays[i],Y=sig2[i]-s2min;sw+=W;sx+=W*X;sy+=W*Y;sxx+=W*X*X;sxy+=W*X*Y;});
+  let sw=0,sx=0,sy=0,sxx=0,sxy=0;okI.forEach(i=>{const W=Math.abs(sigRes[i].amp),X=delays[i],Y=sig2[i]-s2min;sw+=W;sx+=W*X;sy+=W*Y;sxx+=W*X*X;sxy+=W*X*Y;});
   const slope=(sw*sxy-sx*sy)/(sw*sxx-sx*sx),icpt=(sy-slope*sx)/sw;
   let curY=0,curWl=wl[jNeg];const slider=document.getElementById("c25c-t");
   function redraw(){
@@ -950,12 +950,13 @@ try{(function(){
       shapes:[{type:"line",xref:"x",yref:"paper",x0:curWl,x1:curWl,y0:0,y1:1,line:{color:"#999",dash:"dot"}}]}),CFG);
     // spatial cut
     const prof=frame.map(r=>r[iw]),tr1=[{x:yUm,y:prof,mode:"markers",marker:{size:3,color:"#999"},name:"cut"}];let t1="spatial cut (below noise gate)";
-    if(delays[it]>=0.3){const res=dipSigma(prof);if(res){const sg=res.sigma,mu=res.mu,amp=-res.amp;tr1.push({x:yUm,y:yUm.map(v=>amp*Math.exp(-0.5*(v-mu)*(v-mu)/(sg*sg))),mode:"lines",line:{color:"#dc2626",width:1.8},name:"Gaussian"});t1="spatial cut: σ = "+sg.toFixed(2)+" µm";}}
+    if(delays[it]>=0){const res=dipSigma(prof);if(res){const sg=res.sigma,mu=res.mu,amp=res.amp;tr1.push({x:yUm,y:yUm.map(v=>amp*Math.exp(-0.5*(v-mu)*(v-mu)/(sg*sg))),mode:"lines",line:{color:"#dc2626",width:1.8},name:"Gaussian"});t1="spatial cut: σ = "+sg.toFixed(2)+" µm ("+(res.sign>0?"peak":"dip")+")";}}
     Plotly.react("c25c-spat",tr1,L({showlegend:false,margin:{l:50,r:8,t:28,b:40},title:{text:t1,font:{size:12}},xaxis:{title:{text:"y (µm)"}},yaxis:{title:{text:"dR/R"}}}),CFG);
     // dynamics
     const dyn=stack.map(f=>f[iy][iw]),tr2=[{x:delays,y:dyn,mode:"markers",marker:{size:4,color:"#2563eb"},name:"dyn"}];
-    const fitI=delays.map((tv,i)=>(tv>1&&dyn[i]<-8*NOISE)?i:-1).filter(i=>i>=0);let t2="dynamics (incl. pre-t₀)";
-    if(fitI.length>5){let fx=0,fy=0,fxx=0,fxy=0;fitI.forEach(i=>{const X=delays[i],Y=Math.log(-dyn[i]);fx+=X;fy+=Y;fxx+=X*X;fxy+=X*Y;});const m=fitI.length,bs=(m*fxy-fx*fy)/(m*fxx-fx*fx),bi=(fy-bs*fx)/m;if(bs<0){const tl=linspace(1,80,80);tr2.push({x:tl,y:tl.map(T=>-Math.exp(bi+bs*T)),mode:"lines",line:{color:"#dc2626",width:1.8},name:"exp"});t2="dynamics: τ = "+(-1/bs).toFixed(1)+" ps (< population τ)";}}
+    let idn=0;for(let i=1;i<dyn.length;i++)if(Math.abs(dyn[i])>Math.abs(dyn[idn]))idn=i;const dsg=dyn[idn]>=0?1:-1;
+    const fitI=delays.map((tv,i)=>(tv>1&&dsg*dyn[i]>8*NOISE)?i:-1).filter(i=>i>=0);let t2="dynamics (incl. pre-t₀)";
+    if(fitI.length>5){let fx=0,fy=0,fxx=0,fxy=0;fitI.forEach(i=>{const X=delays[i],Y=Math.log(dsg*dyn[i]);fx+=X;fy+=Y;fxx+=X*X;fxy+=X*Y;});const m=fitI.length,bs=(m*fxy-fx*fy)/(m*fxx-fx*fx),bi=(fy-bs*fx)/m;if(bs<0){const tl=linspace(1,80,80);tr2.push({x:tl,y:tl.map(T=>dsg*Math.exp(bi+bs*T)),mode:"lines",line:{color:"#dc2626",width:1.8},name:"exp"});t2="dynamics: τ = "+(-1/bs).toFixed(1)+" ps (< population τ)";}}
     Plotly.react("c25c-dyn",tr2,L({showlegend:false,margin:{l:50,r:8,t:28,b:40},title:{text:t2,font:{size:11.5}},xaxis:{title:{text:"delay (ps)"}},yaxis:{title:{text:"dR/R"}},
       shapes:[{type:"line",xref:"x",yref:"paper",x0:delays[it],x1:delays[it],y0:0,y1:1,line:{color:"#999",dash:"dot"}},{type:"line",xref:"x",yref:"paper",x0:0,x1:0,y0:0,y1:1,line:{color:"#ccc",width:1}}]}),CFG);
     // MSD
