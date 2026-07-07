@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Characterizing a New Sample — an optical-spectroscopy workflow</title>
+<title>Toddler's Toolbox of Data Processing</title>
 <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
@@ -14,13 +14,17 @@
   body{ margin:0; background:#fff; color:var(--ink);
     font:16px/1.65 -apple-system,"Segoe UI",Helvetica,Arial,sans-serif; }
   a{ color:var(--accent); text-decoration:none; } a:hover{ text-decoration:underline; }
-  header.hero{ padding:28px 20px 20px; border-bottom:3px solid var(--accent); }
+  header.hero{ padding:28px 20px 18px; border-bottom:1px solid var(--line); }
   .hero-inner{ max-width:900px; margin:0 auto; }
   .hero h1{ margin:0 0 6px; font-size:32px; font-weight:700; line-height:1.15; }
   .hero p.sub{ margin:0; color:var(--muted); font-size:16px; max-width:730px; }
   .hero .meta{ margin-top:11px; font-size:13px; color:var(--muted); display:flex; gap:8px 18px; flex-wrap:wrap; }
   nav.toc{ position:sticky; top:0; z-index:50; background:#fff; border-bottom:1px solid var(--line); }
-  .toc-inner{ max-width:900px; margin:0 auto; display:flex; overflow-x:auto; padding:0 12px; }
+  .toc-inner{ max-width:900px; margin:0 auto; display:flex; flex-wrap:wrap; padding:0 12px; }
+  .prow{ display:flex; flex-wrap:wrap; gap:6px; }
+  .prow>.plot{ flex:1 1 300px; min-width:0; }
+  .prow3{ display:flex; flex-wrap:wrap; gap:6px; }
+  .prow3>.plot{ flex:1 1 240px; min-width:0; }
   nav.toc a{ flex:none; padding:9px 11px; color:var(--muted); font-size:13px; border-bottom:2px solid transparent; }
   nav.toc a:hover{ color:var(--accent); border-bottom-color:var(--accent); text-decoration:none; }
   main{ max-width:900px; margin:0 auto; padding:4px 20px 80px; }
@@ -70,16 +74,16 @@
   .steps2 .box{ border-left:2px solid var(--faint); padding-left:14px; }
   footer{ border-top:1px solid var(--line); padding:20px; color:var(--muted); font-size:13px; text-align:center; }
   footer a{ color:var(--accent); }
-  @media(max-width:720px){ .steps2{ grid-template-columns:1fr; } }
+  @media(max-width:720px){ .steps2{ grid-template-columns:1fr; } nav.toc{ display:none; } }
 </style>
 </head>
 <body>
 
 <header class="hero">
   <div class="hero-inner">
-    <h1>Characterizing a New Sample</h1>
-    <p class="sub">A proposed optical-spectroscopy characterization workflow, with the data-processing
-       and instrument details behind each step.</p>
+    <h1>Toddler's Toolbox of Data Processing</h1>
+    <p class="sub">A proposed pass for characterizing a new sample, with the data-processing and
+       instrument details behind each step.</p>
     <div class="meta">
       <span>Last edited: 2026-07-07 by <b style="color:var(--ink)">Minxue Wang</b></span>
       <a href="https://github.com/moonriver366/data-processing-101">GitHub &amp; issues</a>
@@ -120,10 +124,9 @@
       <span>TRPL time traces (TCSPC, IRF-convolved fits); spatial-profile evolution by point-scan or
       SPAD array; MSD &amp; transport regimes; multi-species imaging; transient reflectance / TA maps.</span></div>
   </div>
-  <p class="open-q"><b>Zero-th rule:</b> every routine here is checked on synthetic data with known
-     ground truth before it touches a measurement. If it cannot recover what was put in, it does not get
-     used. Deferred for now: the k-space toolkit for strongly dispersive samples (polariton dispersion
-     fitting etc.) — its own step, later.</p>
+  <p class="note" style="color:var(--muted)">Deferred for now: the k-space toolkit for strongly dispersive
+     samples (polariton dispersion fitting etc.) — its own step, later. Everything here runs on synthetic
+     data with known ground truth.</p>
 </section>
 
 <!-- ================= STEP 1 ================= -->
@@ -194,7 +197,11 @@
       <span>M = <b id="c11-M"></b>×</span><span>µm/px on sample = <b id="c11-umpp"></b></span>
       <span>spot FWHM = <b id="c11-fw"></b> µm</span><span>k-space edge = <b id="c11-th"></b>°</span>
     </div>
-    <div class="plot" id="c11-plot" style="height:320px"></div>
+    <div class="prow3">
+      <div class="plot" id="c11-a" style="height:250px"></div>
+      <div class="plot" id="c11-b" style="height:250px"></div>
+      <div class="plot" id="c11-c" style="height:250px"></div>
+    </div>
   </div>
   <details class="code"><summary>Python — parse the .asc, real-space &amp; k-space calibration</summary>
 <pre>def read_asc(text):
@@ -248,7 +255,10 @@ def k_space_angle_axis(n_px, lo, hi, NA):         <span class="code-cmt"># disk 
       <div class="ctrl">interp. order <input type="range" id="c13a-o" min="1" max="3" step="1" value="2"><span class="val" id="c13a-o-v"></span></div>
       <div class="ctrl">noise <input type="range" id="c13a-n" min="0" max="3" step="0.25" value="1"><span class="val" id="c13a-n-v"></span></div>
     </div>
-    <div class="plot" id="c13a-plot" style="height:380px"></div>
+    <div class="prow">
+      <div class="plot" id="c13a-a" style="height:320px"></div>
+      <div class="plot" id="c13a-b" style="height:320px"></div>
+    </div>
   </div>
 </section>
 
@@ -328,7 +338,10 @@ def k_space_angle_axis(n_px, lo, hi, NA):         <span class="code-cmt"># disk 
       <div class="ctrl">intensity ratio a <input type="range" id="c14-a" min="0.2" max="5" step="0.1" value="2"><span class="val" id="c14-a-v"></span></div>
       <div class="ctrl">lifetime ratio b <input type="range" id="c14-b" min="0.2" max="5" step="0.1" value="0.4"><span class="val" id="c14-b-v"></span></div>
     </div>
-    <div class="plot" id="c14-plot" style="height:330px"></div>
+    <div class="prow">
+      <div class="plot" id="c14-a" style="height:300px"></div>
+      <div class="plot" id="c14-b" style="height:300px"></div>
+    </div>
   </div>
   <p class="note"><b>(2) The spatial profile is not the laser.</b> Whatever is excited moves before it emits;
      for diffusion during an exponential lifetime the variances add, giving a diffusion length from two
@@ -359,7 +372,10 @@ def k_space_angle_axis(n_px, lo, hi, NA):         <span class="code-cmt"># disk 
     <div class="controls">
       <div class="ctrl">control knob <input type="range" id="c15-k" min="0" max="49" step="1" value="25"><span class="val" id="c15-k-v"></span></div>
     </div>
-    <div class="plot" id="c15-plot" style="height:380px"></div>
+    <div class="prow">
+      <div class="plot" id="c15-a" style="height:330px"></div>
+      <div class="plot" id="c15-b" style="height:330px"></div>
+    </div>
   </div>
   <p class="filelink">Full script:
     <a href="https://github.com/moonriver366/data-processing-101/blob/main/examples/1_steady_state/06_parameter_sweep_peak_tracking.py">06_parameter_sweep_peak_tracking.py</a></p>
@@ -456,7 +472,10 @@ def k_space_angle_axis(n_px, lo, hi, NA):         <span class="code-cmt"># disk 
         <select id="c23-r"><option value="0" selected>diffusion (D = 0.10)</option><option value="1">ballistic (v = 0.25)</option><option value="2">annihilation (D = 0)</option><option value="3">saturation (D = 0)</option></select></div>
       <div class="ctrl">time <input type="range" id="c23-t" min="0" max="40" step="1" value="10"><span class="val" id="c23-t-v"></span></div>
     </div>
-    <div class="plot" id="c23-plot" style="height:350px"></div>
+    <div class="prow">
+      <div class="plot" id="c23-a" style="height:310px"></div>
+      <div class="plot" id="c23-b" style="height:310px"></div>
+    </div>
   </div>
   <p class="filelink">Full script:
     <a href="https://github.com/moonriver366/data-processing-101/blob/main/examples/2_time_resolved/03_msd_transport_regimes.py">03_msd_transport_regimes.py</a></p>
@@ -467,16 +486,19 @@ def k_space_angle_axis(n_px, lo, hi, NA):         <span class="code-cmt"># disk 
   <h3 class="sub"><span class="tag">2.4</span>Two species: spectrally-resolved imaging</h3>
   <div class="schematic">
     <div class="cap">the toy model — pump feeds H, which relaxes into a saturable L</div>
-    <svg width="420" height="150" viewBox="0 0 420 150" role="img" aria-label="two level cascade">
+    <svg width="440" height="152" viewBox="0 0 440 152" role="img" aria-label="two level cascade">
+      <defs>
+        <marker id="au" markerWidth="9" markerHeight="9" refX="6" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="#555"/></marker>
+        <marker id="ap" markerWidth="9" markerHeight="9" refX="6" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="#6b3fd4"/></marker>
+      </defs>
       <g font-size="12.5" fill="#202122">
-        <line x1="70" y1="30" x2="200" y2="30" stroke="#333" stroke-width="3"/><text x="210" y="34">|H⟩ (high energy)</text>
-        <line x1="70" y1="112" x2="200" y2="112" stroke="#333" stroke-width="3"/><text x="210" y="116">|L⟩ (low energy, capacity N_sat)</text>
-        <line x1="40" y1="132" x2="200" y2="132" stroke="#999" stroke-width="2.5"/><text x="210" y="136" fill="#54595d">ground</text>
-        <path d="M55,132 L55,32" stroke="#6b3fd4" stroke-width="2" marker-end="url(#au)"/><text x="18" y="86" font-size="11" fill="#6b3fd4">pump</text>
-        <path d="M135,30 C165,64 165,82 135,110" stroke="#666" stroke-width="2" fill="none" marker-end="url(#au)"/><text x="172" y="74" font-size="10.5" fill="#54595d">k (saturates)</text>
-        <path d="M95,112 L95,134" stroke="#666" stroke-width="1.6" marker-end="url(#au)"/>
+        <line x1="80" y1="30" x2="210" y2="30" stroke="#333" stroke-width="3"/><text x="218" y="34">|H⟩ (high energy)</text>
+        <line x1="80" y1="108" x2="210" y2="108" stroke="#333" stroke-width="3"/><text x="218" y="112">|L⟩ (low energy, capacity N_sat)</text>
+        <line x1="50" y1="134" x2="210" y2="134" stroke="#999" stroke-width="2.5"/><text x="218" y="138" fill="#54595d">ground</text>
+        <path d="M66,132 L66,34" stroke="#6b3fd4" stroke-width="2" fill="none" marker-end="url(#ap)"/><text x="28" y="86" font-size="11" fill="#6b3fd4">pump</text>
+        <path d="M120,32 C154,58 154,80 122,106" stroke="#666" stroke-width="2" fill="none" marker-end="url(#au)"/><text x="160" y="72" font-size="10.5" fill="#54595d">k (saturates)</text>
+        <path d="M96,110 L96,130" stroke="#666" stroke-width="1.6" fill="none" marker-end="url(#au)"/><text x="101" y="126" font-size="10" fill="#54595d">emit</text>
       </g>
-      <defs><marker id="au" markerWidth="8" markerHeight="8" refX="4" refY="7" orient="auto"><path d="M0,7 L4,0 L8,7 Z" fill="#555"/></marker></defs>
     </svg>
   </div>
   <p class="note">A band-pass gives one profile per band. Pump feeds H, which relaxes into a saturable L.
@@ -552,7 +574,10 @@ def k_space_angle_axis(n_px, lo, hi, NA):         <span class="code-cmt"># disk 
       <div class="ctrl">shift <input type="range" id="c25a-s" min="-5" max="5" step="0.2" value="0"><span class="val" id="c25a-s-v"></span></div>
       <div class="ctrl">broaden <input type="range" id="c25a-w" min="0" max="50" step="1" value="0"><span class="val" id="c25a-w-v"></span></div>
     </div>
-    <div class="plot" id="c25a-plot" style="height:350px"></div>
+    <div class="prow">
+      <div class="plot" id="c25a-a" style="height:310px"></div>
+      <div class="plot" id="c25a-b" style="height:310px"></div>
+    </div>
   </div>
   <p class="filelink">Full script:
     <a href="https://github.com/moonriver366/data-processing-101/blob/main/examples/3_transient_reflectance/01_dr_over_r_origins.py">01_dr_over_r_origins.py</a></p>
@@ -567,7 +592,10 @@ def k_space_angle_axis(n_px, lo, hi, NA):         <span class="code-cmt"># disk 
       <div class="ctrl">chirp strength <input type="range" id="c25b-c" min="0" max="2.5" step="0.1" value="1.0"><span class="val" id="c25b-c-v"></span></div>
       <div class="ctrl"><label class="chk"><input type="checkbox" id="c25b-corr" checked> apply chirp correction</label></div>
     </div>
-    <div class="plot" id="c25b-plot" style="height:400px"></div>
+    <div class="prow">
+      <div class="plot" id="c25b-a" style="height:330px"></div>
+      <div class="plot" id="c25b-b" style="height:330px"></div>
+    </div>
   </div>
   <p class="filelink">Full script:
     <a href="https://github.com/moonriver366/data-processing-101/blob/main/examples/3_transient_reflectance/02_ta_map_chirp_correction.py">02_ta_map_chirp_correction.py</a></p>
@@ -633,14 +661,13 @@ try{(function(){
     const gs=xs.map(x=>Math.exp(-0.5*x*x/(sigS*sigS))),gc=xc.map(x=>Math.exp(-0.5*x*x/(sigC*sigC)));
     const px=linspace(0,199,200),cc=99.5,R=92;
     const th=px.map(p=>{const s=Math.max(-.999,Math.min(.999,NA*(p-cc)/R));return Math.asin(s)*180/Math.PI;});
-    Plotly.react("c11-plot",[
-      {x:xs,y:gs,mode:"lines",line:{color:"#dc2626",width:2},name:"spot on sample",xaxis:"x",yaxis:"y"},
-      {x:xc,y:gc,mode:"lines",line:{color:"#2563eb",width:2},name:"image on camera (×M)",xaxis:"x2",yaxis:"y2"},
-      {x:px,y:th,mode:"lines",line:{color:"#6b3fd4",width:2},name:"k-space angle axis",xaxis:"x3",yaxis:"y3"}
-    ],L({grid:{rows:1,columns:3,pattern:"independent"},
-      xaxis:{title:{text:"sample (µm)"},domain:[0,0.29]},yaxis:{title:{text:"I"}},
-      xaxis2:{title:{text:"camera (µm)"},domain:[0.37,0.66]},
-      xaxis3:{title:{text:"pixel (BFP)"},domain:[0.74,1]},yaxis3:{title:{text:"angle (°)"}}}),CFG);
+    const sub={showlegend:false,margin:{l:50,r:10,t:26,b:40}};
+    Plotly.react("c11-a",[{x:xs,y:gs,mode:"lines",line:{color:"#dc2626",width:2}}],
+      L(Object.assign({title:{text:"spot on sample",font:{size:12}},xaxis:{title:{text:"sample (µm)"}},yaxis:{title:{text:"I"}}},sub)),CFG);
+    Plotly.react("c11-b",[{x:xc,y:gc,mode:"lines",line:{color:"#2563eb",width:2}}],
+      L(Object.assign({title:{text:"image on camera (×M)",font:{size:12}},xaxis:{title:{text:"camera (µm)"}}},sub)),CFG);
+    Plotly.react("c11-c",[{x:px,y:th,mode:"lines",line:{color:"#6b3fd4",width:2}}],
+      L(Object.assign({title:{text:"k-space angle axis",font:{size:12}},xaxis:{title:{text:"pixel (BFP)"}},yaxis:{title:{text:"angle (°)"}}},sub)),CFG);
   });
 })();}catch(e){console.error("1.1",e);}
 
@@ -677,16 +704,16 @@ try{(function(){
     const Rsub=E.map((e,i)=>Math.max(WL[i]+nz*randn(rng),1e-3));
     const xs=[],ys=[];for(let i=0;i<nE;i++)if(E[i]<705||E[i]>735){xs.push(E[i]);ys.push(Rsam[i]);}
     const Bg=polyfitEval(xs,ys,order,E);
-    Plotly.react("c13a-plot",[
-      {x:E,y:Rsam,mode:"lines",line:{color:"#dc2626",width:1.3},name:"R on sample",xaxis:"x",yaxis:"y"},
-      {x:E,y:Rsub,mode:"lines",line:{color:"#2563eb",width:1.3},name:"R on substrate",xaxis:"x",yaxis:"y"},
-      {x:E,y:Bg,mode:"lines",line:{color:"#111",dash:"dot",width:1.2},name:"interp. background",xaxis:"x",yaxis:"y"},
-      {x:E,y:Rsam.map((r,i)=>(r-Rsub[i])/Rsub[i]),mode:"lines",line:{color:"#2563eb",width:1.6},name:"RC (measured ref.)",xaxis:"x2",yaxis:"y2"},
-      {x:E,y:Rsam.map((r,i)=>(r-Bg[i])/Math.max(Bg[i],1e-3)),mode:"lines",line:{color:"#dc2626",width:1.6},name:"RC (reference-free)",xaxis:"x2",yaxis:"y2"}
-    ],L({grid:{rows:1,columns:2,pattern:"independent"},
-      xaxis:{title:{text:"wavelength (nm)"}},yaxis:{title:{text:"reflected counts"}},
-      xaxis2:{title:{text:"wavelength (nm)"},range:[690,750]},yaxis2:{title:{text:"RC"}},
+    Plotly.react("c13a-a",[
+      {x:E,y:Rsam,mode:"lines",line:{color:"#dc2626",width:1.3},name:"R on sample"},
+      {x:E,y:Rsub,mode:"lines",line:{color:"#2563eb",width:1.3},name:"R on substrate"},
+      {x:E,y:Bg,mode:"lines",line:{color:"#111",dash:"dot",width:1.2},name:"interp. background"}
+    ],L({margin:{l:52,r:10,t:26,b:42},xaxis:{title:{text:"wavelength (nm)"}},yaxis:{title:{text:"reflected counts"}},
       shapes:[{type:"rect",xref:"x",yref:"paper",x0:705,x1:735,y0:0,y1:1,fillcolor:"rgba(107,63,212,.06)",line:{width:0}}]}),CFG);
+    Plotly.react("c13a-b",[
+      {x:E,y:Rsam.map((r,i)=>(r-Rsub[i])/Rsub[i]),mode:"lines",line:{color:"#2563eb",width:1.6},name:"RC (measured ref.)"},
+      {x:E,y:Rsam.map((r,i)=>(r-Bg[i])/Math.max(Bg[i],1e-3)),mode:"lines",line:{color:"#dc2626",width:1.6},name:"RC (reference-free)"}
+    ],L({margin:{l:52,r:10,t:26,b:42},xaxis:{title:{text:"wavelength (nm)"},range:[690,750]},yaxis:{title:{text:"RC"}}}),CFG);
   });
 })();}catch(e){console.error("1.3a",e);}
 
@@ -737,16 +764,15 @@ try{(function(){
     const a=+document.getElementById("c14-a").value,b=+document.getElementById("c14-b").value;
     sv("c14-a-v",a.toFixed(1));sv("c14-b-v",b.toFixed(1));
     const I1=a,I2=1,t2=1.5,t1=b*t2;
-    Plotly.react("c14-plot",[
-      {x:t,y:t.map(x=>I1*Math.exp(-x/t1)),mode:"lines",line:{color:"#dc2626",width:2},name:"peak 1 (I₁,τ₁)",xaxis:"x",yaxis:"y"},
-      {x:t,y:t.map(x=>I2*Math.exp(-x/t2)),mode:"lines",line:{color:"#2563eb",width:2},name:"peak 2 (I₂,τ₂)",xaxis:"x",yaxis:"y"},
-      {x:Ecm,y:Ecm.map(e=>g(e,I1,1.66,0.010)+g(e,I2,1.70,0.010)),mode:"lines",line:{color:"#6b3fd4",width:1.4,dash:"dot"},name:"peak-height (∝ I)",xaxis:"x2",yaxis:"y2"},
-      {x:Ecm,y:Ecm.map(e=>g(e,I1*t1,1.66,0.010)+g(e,I2*t2,1.70,0.010)),mode:"lines",line:{color:"#111",width:2},name:"time-integrated (∝ I·τ)",xaxis:"x2",yaxis:"y2"}
-    ],L({grid:{rows:1,columns:2,pattern:"independent"},
-      xaxis:{title:{text:"time (ns)"}},yaxis:{title:{text:"instantaneous I"}},
-      xaxis2:{title:{text:"energy (eV)"}},yaxis2:{title:{text:"PL"}},
-      annotations:[{x:0.5,y:1.16,xref:"paper",yref:"paper",xanchor:"center",showarrow:false,
-        text:"integrated ratio a·b = "+(a*b).toFixed(2)+"   (peak-height ratio a = "+a.toFixed(2)+")",font:{size:11,color:"#54595d"}}]}),CFG);
+    Plotly.react("c14-a",[
+      {x:t,y:t.map(x=>I1*Math.exp(-x/t1)),mode:"lines",line:{color:"#dc2626",width:2},name:"peak 1 (I₁,τ₁)"},
+      {x:t,y:t.map(x=>I2*Math.exp(-x/t2)),mode:"lines",line:{color:"#2563eb",width:2},name:"peak 2 (I₂,τ₂)"}
+    ],L({margin:{l:52,r:10,t:26,b:42},title:{text:"dynamics",font:{size:12}},xaxis:{title:{text:"time (ns)"}},yaxis:{title:{text:"instantaneous I"}}}),CFG);
+    Plotly.react("c14-b",[
+      {x:Ecm,y:Ecm.map(e=>g(e,I1,1.66,0.010)+g(e,I2,1.70,0.010)),mode:"lines",line:{color:"#6b3fd4",width:1.4,dash:"dot"},name:"peak-height (∝ I)"},
+      {x:Ecm,y:Ecm.map(e=>g(e,I1*t1,1.66,0.010)+g(e,I2*t2,1.70,0.010)),mode:"lines",line:{color:"#111",width:2},name:"time-integrated (∝ I·τ)"}
+    ],L({margin:{l:52,r:10,t:26,b:42},title:{text:"integrated ratio a·b = "+(a*b).toFixed(2)+"  (heights a = "+a.toFixed(2)+")",font:{size:11.5}},
+      xaxis:{title:{text:"energy (eV)"}},yaxis:{title:{text:"PL"}}}),CFG);
   });
 })();}catch(e){console.error("1.4",e);}
 
@@ -776,15 +802,16 @@ try{(function(){
   for(let i=0;i<nK;i++){const k=knob[i];const c={A1:900*(1-0.8*k),mu1:1.712,s1:0.006,A2:850*k,mu2:1.690+0.030*k,s2:0.009};comps.push(c);const row=new Array(nE);for(let j=0;j<nE;j++){const m=g(energy[j],c.A1,c.mu1,c.s1)+g(energy[j],c.A2,c.mu2,c.s2);row[j]=Math.max(m+Math.sqrt(Math.max(m,1))*randn(rng),0);}z.push(row);}
   hook(["c15-k"],function(){
     const ki=+document.getElementById("c15-k").value;sv("c15-k-v",knob[ki].toFixed(2));const c=comps[ki];
-    Plotly.react("c15-plot",[
-      {z:z,x:energy,y:knob,type:"heatmap",colorscale:"Magma",showscale:false},
-      {x:energy,y:z[ki],mode:"lines",line:{color:"#999",width:1},name:"spectrum",xaxis:"x2",yaxis:"y2"},
-      {x:energy,y:energy.map(E=>g(E,c.A1,c.mu1,c.s1)),mode:"lines",line:{color:"#dc2626",dash:"dash"},name:"peak A",xaxis:"x2",yaxis:"y2"},
-      {x:energy,y:energy.map(E=>g(E,c.A2,c.mu2,c.s2)),mode:"lines",line:{color:"#2563eb",dash:"dash"},name:"peak B",xaxis:"x2",yaxis:"y2"}
-    ],L({grid:{rows:1,columns:2,pattern:"independent"},
+    Plotly.react("c15-a",[
+      {z:z,x:energy,y:knob,type:"heatmap",colorscale:"Magma",showscale:false}
+    ],L({showlegend:false,margin:{l:52,r:10,t:26,b:42},title:{text:"spectra vs knob",font:{size:12}},
       xaxis:{title:{text:"energy (eV)"}},yaxis:{title:{text:"control knob"}},
-      xaxis2:{title:{text:"energy (eV)"},range:[1.66,1.76]},yaxis2:{title:{text:"counts"}},
       shapes:[{type:"line",xref:"x",yref:"y",x0:energy[0],x1:energy[nE-1],y0:knob[ki],y1:knob[ki],line:{color:"#fff",dash:"dash",width:1.5}}]}),CFG);
+    Plotly.react("c15-b",[
+      {x:energy,y:z[ki],mode:"lines",line:{color:"#999",width:1},name:"spectrum @ knob"},
+      {x:energy,y:energy.map(E=>g(E,c.A1,c.mu1,c.s1)),mode:"lines",line:{color:"#dc2626",dash:"dash"},name:"peak A"},
+      {x:energy,y:energy.map(E=>g(E,c.A2,c.mu2,c.s2)),mode:"lines",line:{color:"#2563eb",dash:"dash"},name:"peak B"}
+    ],L({margin:{l:52,r:10,t:26,b:42},xaxis:{title:{text:"energy (eV)"},range:[1.66,1.76]},yaxis:{title:{text:"counts"}}}),CFG);
   });
 })();}catch(e){console.error("1.5",e);}
 
@@ -827,12 +854,14 @@ try{(function(){
     const ri=+document.getElementById("c23-r").value,ti=+document.getElementById("c23-t").value,r=res[ri];
     sv("c23-t-v",r.sT[ti].toFixed(2)+" ns");
     const prof=r.det[ti],pmax=Math.max.apply(null,r.det[0]);
-    const tr=[{x:x,y:prof.map(v=>v/pmax),mode:"lines",line:{color:regs[ri].c,width:2},name:"profile @ t"},{x:x,y:r.det[0].map(v=>v/pmax),mode:"lines",line:{color:"#ccc",width:1.5},name:"@ t=0"}];
-    res.forEach((rr,i)=>tr.push({x:rr.sT,y:rr.msd,mode:"lines",line:{color:regs[i].c,width:i===ri?2.5:1,dash:i===ri?"solid":"dot"},name:regs[i].n,xaxis:"x2",yaxis:"y2"}));
-    Plotly.react("c23-plot",tr,L({grid:{rows:1,columns:2,pattern:"independent"},
-      xaxis:{title:{text:"x (µm)"},range:[-5,5]},yaxis:{title:{text:"normalized"}},
-      xaxis2:{title:{text:"time (ns)"}},yaxis2:{title:{text:"MSD = σ²−σ₀² (µm²)"}},
-      shapes:[{type:"line",xref:"x2",yref:"paper",x0:r.sT[ti],x1:r.sT[ti],y0:0,y1:1,line:{color:"#999",dash:"dot"}}]}),CFG);
+    Plotly.react("c23-a",[
+      {x:x,y:prof.map(v=>v/pmax),mode:"lines",line:{color:regs[ri].c,width:2},name:"profile @ t"},
+      {x:x,y:r.det[0].map(v=>v/pmax),mode:"lines",line:{color:"#ccc",width:1.5},name:"@ t=0"}
+    ],L({margin:{l:52,r:10,t:26,b:42},title:{text:"profile @ t",font:{size:12}},xaxis:{title:{text:"x (µm)"},range:[-5,5]},yaxis:{title:{text:"normalized"}}}),CFG);
+    const tr=[];
+    res.forEach((rr,i)=>tr.push({x:rr.sT,y:rr.msd,mode:"lines",line:{color:regs[i].c,width:i===ri?2.5:1,dash:i===ri?"solid":"dot"},name:regs[i].n}));
+    Plotly.react("c23-b",tr,L({margin:{l:52,r:10,t:26,b:42},xaxis:{title:{text:"time (ns)"}},yaxis:{title:{text:"MSD = σ²−σ₀² (µm²)"}},
+      shapes:[{type:"line",xref:"x",yref:"paper",x0:r.sT[ti],x1:r.sT[ti],y0:0,y1:1,line:{color:"#999",dash:"dot"}}]}),CFG);
   });
 })();}catch(e){console.error("2.3",e);}
 
@@ -871,14 +900,14 @@ try{(function(){
     const b=+document.getElementById("c25a-b").value/100,s=+document.getElementById("c25a-s").value/1000,w=+document.getElementById("c25a-w").value/100;
     sv("c25a-b-v",(b*100).toFixed(0)+"%");sv("c25a-s-v",(s*1000).toFixed(1)+" meV");sv("c25a-w-v",(w*100).toFixed(0)+"%");
     const R0=refl(0.15,1.70,0.012,fano),Ron=refl(0.15*(1-b),1.70+s,0.012*(1+w),fano);
-    Plotly.react("c25a-plot",[
+    Plotly.react("c25a-a",[
       {x:E,y:R0,mode:"lines",line:{color:"#111",width:1.8},name:"pump off R₀ ("+(fano?"Fano":"Lorentzian dip")+")"},
-      {x:E,y:Ron,mode:"lines",line:{color:"#dc2626",dash:"dash",width:1.4},name:"pump on"},
-      {x:E,y:R0.map((r,i)=>(Ron[i]-r)/r*100),mode:"lines",line:{color:"#6b3fd4",width:2},name:"dR/R₀ (%)",xaxis:"x2",yaxis:"y2"}
-    ],L({grid:{rows:1,columns:2,pattern:"independent"},
-      xaxis:{title:{text:"energy (eV)"}},yaxis:{title:{text:"reflectance"}},
-      xaxis2:{title:{text:"energy (eV)"}},yaxis2:{title:{text:"dR/R₀ (%)"}},
-      shapes:[{type:"line",xref:"x2",yref:"y2",x0:E[0],x1:E[E.length-1],y0:0,y1:0,line:{color:"#ccc",width:1}}]}),CFG);
+      {x:E,y:Ron,mode:"lines",line:{color:"#dc2626",dash:"dash",width:1.4},name:"pump on"}
+    ],L({margin:{l:52,r:10,t:26,b:42},xaxis:{title:{text:"energy (eV)"}},yaxis:{title:{text:"reflectance"}}}),CFG);
+    Plotly.react("c25a-b",[
+      {x:E,y:R0.map((r,i)=>(Ron[i]-r)/r*100),mode:"lines",line:{color:"#6b3fd4",width:2},name:"dR/R₀ (%)"}
+    ],L({showlegend:false,margin:{l:52,r:10,t:26,b:42},title:{text:"dR/R₀",font:{size:12}},xaxis:{title:{text:"energy (eV)"}},yaxis:{title:{text:"dR/R₀ (%)"}},
+      shapes:[{type:"line",xref:"paper",yref:"y",x0:0,x1:1,y0:0,y1:0,line:{color:"#ccc",width:1}}]}),CFG);
   });
 })();}catch(e){console.error("2.5a",e);}
 
@@ -892,16 +921,16 @@ try{(function(){
     for(let i=0;i<nT;i++){const row=new Array(nW);for(let j=0;j<nW;j++){const tt=t[i]-t0[j],rise=0.5*(1+Math.tanh(tt/0.25)),dec=tt>0?Math.exp(-tt/6):1,dec2=tt>0?Math.exp(-tt/15):1;row[j]=-1.0e-3*gsh(wl[j],750,8)*rise*dec+7e-4*gsh(wl[j],720,9)*rise*dec2+4e-5*randn(rng);}z.push(row);}
     let zs=z;if(doC&&s>0){zs=[];for(let i=0;i<nT;i++)zs.push(new Array(nW).fill(null));for(let j=0;j<nW;j++)for(let i=0;i<nT;i++){const pos=i+t0[j]/dt,k=Math.floor(pos);if(k<0||k>=nT-1){zs[i][j]=null;continue;}const f=pos-k;zs[i][j]=z[k][j]*(1-f)+z[k+1][j]*f;}}
     const j750=argminAbs(wl,750),j720=argminAbs(wl,720);
-    Plotly.react("c25b-plot",[
+    Plotly.react("c25b-a",[
       {z:zs,x:wl,y:t,type:"heatmap",colorscale:"RdBu",reversescale:true,zmid:0,zmin:-1e-3,zmax:1e-3,showscale:false},
-      {x:wl,y:t0,mode:"lines",line:{color:"#111",dash:"dash",width:1.5},name:"t₀(λ) chirp"},
-      {x:t,y:z.map(r=>r[j720]*1e3),mode:"lines",line:{color:"#f59e0b",width:1.2,dash:"dot"},name:"720 raw",xaxis:"x2",yaxis:"y2"},
-      {x:t,y:zs.map(r=>r[j720]==null?null:r[j720]*1e3),mode:"lines",line:{color:"#b45309",width:2},name:"720 corr",xaxis:"x2",yaxis:"y2"},
-      {x:t,y:z.map(r=>r[j750]*1e3),mode:"lines",line:{color:"#93c5fd",width:1.2,dash:"dot"},name:"750 raw",xaxis:"x2",yaxis:"y2"},
-      {x:t,y:zs.map(r=>r[j750]==null?null:r[j750]*1e3),mode:"lines",line:{color:"#1d4ed8",width:2},name:"750 corr",xaxis:"x2",yaxis:"y2"}
-    ],L({grid:{rows:1,columns:2,pattern:"independent"},
-      xaxis:{title:{text:"wavelength (nm)"}},yaxis:{title:{text:"delay (ps)"},range:[-2,10]},
-      xaxis2:{title:{text:"delay (ps)"},range:[-2,30]},yaxis2:{title:{text:"dR/R (×10⁻³)"}}}),CFG);
+      {x:wl,y:t0,mode:"lines",line:{color:"#111",dash:"dash",width:1.5},name:"t₀(λ) chirp"}
+    ],L({margin:{l:52,r:10,t:26,b:42},xaxis:{title:{text:"wavelength (nm)"}},yaxis:{title:{text:"delay (ps)"},range:[-2,10]}}),CFG);
+    Plotly.react("c25b-b",[
+      {x:t,y:z.map(r=>r[j720]*1e3),mode:"lines",line:{color:"#f59e0b",width:1.2,dash:"dot"},name:"720 raw"},
+      {x:t,y:zs.map(r=>r[j720]==null?null:r[j720]*1e3),mode:"lines",line:{color:"#b45309",width:2},name:"720 corr"},
+      {x:t,y:z.map(r=>r[j750]*1e3),mode:"lines",line:{color:"#93c5fd",width:1.2,dash:"dot"},name:"750 raw"},
+      {x:t,y:zs.map(r=>r[j750]==null?null:r[j750]*1e3),mode:"lines",line:{color:"#1d4ed8",width:2},name:"750 corr"}
+    ],L({margin:{l:52,r:10,t:26,b:42},xaxis:{title:{text:"delay (ps)"},range:[-2,30]},yaxis:{title:{text:"dR/R (×10⁻³)"}}}),CFG);
   });
 })();}catch(e){console.error("2.5b",e);}
 
@@ -911,17 +940,23 @@ try{(function(){
   for(let i=0;i<8;i++)delays.push(-5+i*(4.5/7));for(let i=0;i<37;i++)delays.push(80*i/36);
   const yUm=linspace(-12,12,nY),wl=linspace(700,800,nW);
   const D=0.30,SIG0=1.2,tau=22,NOISE=6e-6;
-  const rng=mulberry32(1),stack=[];const q=1.4,G=9;
-  const fanoW=wl.map(w=>{const ep=2*(w-748)/G;return -((q+ep)*(q+ep)/(1+ep*ep))/(q*q);});
+  const rng=mulberry32(1),stack=[];
+  // dispersive (phased) Fano in wavelength -> a positive lobe AND a negative lobe
+  const q=1.15,G=11,cW=750;
+  const rawF=wl.map(w=>{const ep=2*(w-cW)/G;return(q*q-1+2*q*ep)/(1+ep*ep);});
+  const amax=Math.max.apply(null,rawF.map(Math.abs))||1;
+  const fanoW=rawF.map(v=>v/amax);
   for(let i=0;i<nT;i++){const t=delays[i],frame=[];for(let iy=0;iy<nY;iy++){const row=new Array(nW);for(let iw=0;iw<nW;iw++){let sig=0;if(t>=0){const vr=SIG0*SIG0+2*D*t;const sp=Math.exp(-0.5*yUm[iy]*yUm[iy]/vr)*Math.sqrt(SIG0*SIG0/vr);sig=Math.exp(-t/tau)*sp*fanoW[iw]*2e-3;}row[iw]=sig+NOISE*randn(rng);}frame.push(row);}stack.push(frame);}
-  const j748=argminAbs(wl,748);
+  // track the negative lobe for sigma(t)
+  let jNeg=0;for(let k=1;k<nW;k++)if(fanoW[k]<fanoW[jNeg])jNeg=k;
+  const j748=jNeg;
   function dipSigma(prof){const neg=prof.map(v=>-v);const sm=neg.map((v,k)=>{const a=neg[Math.max(k-1,0)],b=neg[Math.min(k+1,nY-1)];return(a+v+b)/3;});let im=0;for(let k=1;k<nY;k++)if(sm[k]>sm[im])im=k;const amp=sm[im];if(amp<8*NOISE)return null;const half=amp/2;let iL=im,iR=im;while(iL>0&&sm[iL]>half)iL--;while(iR<nY-1&&sm[iR]>half)iR++;if(iL===0||iR===nY-1)return null;const xL=yUm[iL]+(half-sm[iL])/(sm[iL+1]-sm[iL])*(yUm[iL+1]-yUm[iL]),xR=yUm[iR-1]+(half-sm[iR-1])/(sm[iR]-sm[iR-1])*(yUm[iR]-yUm[iR-1]);return{sigma:(xR-xL)/2.355,amp:amp,mu:yUm[im]};}
   const sigRes=delays.map((t,i)=>t<0.3?null:dipSigma(stack[i].map(r=>r[j748])));
   const okI=sigRes.map((v,i)=>(v&&delays[i]>0.5)?i:-1).filter(i=>i>=0);
   const sig2=sigRes.map(v=>v?v.sigma*v.sigma:NaN),s2min=Math.min.apply(null,okI.map(i=>sig2[i]));
   let sw=0,sx=0,sy=0,sxx=0,sxy=0;okI.forEach(i=>{const W=sigRes[i].amp,X=delays[i],Y=sig2[i]-s2min;sw+=W;sx+=W*X;sy+=W*Y;sxx+=W*X*X;sxy+=W*X*Y;});
   const slope=(sw*sxy-sx*sy)/(sw*sxx-sx*sx),icpt=(sy-slope*sx)/sw;
-  let curY=0,curWl=748;const slider=document.getElementById("c25c-t");
+  let curY=0,curWl=wl[jNeg];const slider=document.getElementById("c25c-t");
   function redraw(){
     const it=+slider.value;sv("c25c-t-v",delays[it].toFixed(1)+" ps");
     const iy=argminAbs(yUm,curY),iw=argminAbs(wl,curWl),frame=stack[it];
