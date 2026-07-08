@@ -28,7 +28,7 @@
   .step-head .n{ font-size:12px; font-weight:700; letter-spacing:.08em; color:var(--accent); text-transform:uppercase; }
   .step-head h2{ margin:2px 0 0; font-size:24px; font-weight:600; }
   .step-head p{ margin:2px 0 0; color:var(--muted); font-size:14px; }
-  section.blk{ padding:16px 0 4px; border-top:1px solid var(--faint); margin-top:6px; }
+  section.blk{ padding:10px 0 4px; margin-top:12px; }
   h3.sub{ margin:0 0 8px; font-size:19px; font-weight:600; padding-bottom:4px; border-bottom:1px solid var(--faint); }
   h3.sub .tag{ color:var(--accent); font-weight:700; font-size:14px; margin-right:8px; }
   p.note{ margin:4px 0 12px; font-size:15px; }
@@ -39,7 +39,9 @@
   .schematic{ border:1px solid var(--line); background:#fafafa; padding:12px 14px 8px; margin:8px 0 14px; overflow-x:auto; }
   .schematic .cap{ font-size:12px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.03em; margin-bottom:8px; }
   .schematic svg{ display:block; }
-  .schrow{ display:flex; flex-wrap:wrap; gap:18px; align-items:center; }
+  .schrow{ display:flex; flex-wrap:nowrap; gap:18px; align-items:flex-start; }
+  .schrow>svg{ flex:none; }
+  .schrow>div{ flex:none; max-width:300px; }
   .fmt-table{ border-collapse:collapse; font-size:12px; font-variant-numeric:tabular-nums; }
   .fmt-table td,.fmt-table th{ border:1px solid var(--line); padding:3px 8px; text-align:center; }
   .fmt-table th{ background:#f0f0f0; font-weight:700; }
