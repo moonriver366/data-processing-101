@@ -427,10 +427,21 @@ def k_space_angle_axis(n_px, lo, hi, NA):         <span class="code-cmt"># disk 
      two stages raster x,y to image a plane, one full decay per point — complete time resolution, but slow (N²)
      and drift-sensitive. <b>SPAD array:</b> 23 pixels record at once; they don't image the spot, they
      <b>sample</b> it, and a 2D-Gaussian fit per time bin gives σₓ, σ_y.</p>
-  <div class="schematic">
-    <div class="cap">the 23-pixel SPAD layout — rows of 5-4-5-4-5, pixel 11 at center</div>
-    <p style="font-size:12px;color:var(--muted);margin:0 4px 6px">Pitch 23 µm (x) × 19.92 µm (y); pixel coordinates in µm feed the fit directly.</p>
-    <div class="plot" id="c22-lay" style="height:220px;max-width:320px"></div>
+  <p class="note" style="font-size:13.5px;color:var(--muted)">Layout: rows of 5-4-5-4-5 (pixel 11 at
+     center), pitch 23 µm (x) × 19.92 µm (y); pixel coordinates in µm feed the fit directly. Below, a
+     spot lands slightly off-center — drag the offsets and watch the fit track it, exactly what the
+     SPAD GUI does per time bin.</p>
+  <div class="demo">
+    <div class="controls">
+      <div class="ctrl">spot offset x <input type="range" id="c22-ox" min="-25" max="25" step="1" value="9"><span class="val" id="c22-ox-v"></span></div>
+      <div class="ctrl">spot offset y <input type="range" id="c22-oy" min="-20" max="20" step="1" value="6"><span class="val" id="c22-oy-v"></span></div>
+    </div>
+    <div class="readout"><span>fitted center offset: <b id="c22-out"></b></span><span>σ_eq = <b id="c22-seq"></b> µm</span></div>
+    <div class="prow3">
+      <div class="plot" id="c22-arr" style="height:270px"></div>
+      <div class="plot" id="c22-fit" style="height:270px"></div>
+      <div class="plot" id="c22-rad" style="height:270px"></div>
+    </div>
   </div>
   <div class="formula"><div class="lbl">per-time-bin 2D Gaussian fit → σ(t)</div>
     $$ I(x,y)=A\,\exp\!\Big(-\tfrac{(x-x_0)^2}{2\sigma_x^2}-\tfrac{(y-y_0)^2}{2\sigma_y^2}\Big)+\text{offset},
@@ -818,14 +829,72 @@ try{(function(){
   });
 })();}catch(e){console.error("2.1",e);}
 
-/* 2.2 SPAD layout */
+/* 2.2 SPAD array: counts + 2D Gaussian fit + radial profile */
 try{(function(){
   const rows=[[0,1,2,3,4],[5,6,7,8],[9,10,11,12,13],[14,15,16,17],[18,19,20,21,22]];
-  const PX=23.0,PY=19.92,maxc=5,xs=[],ys=[],tx=[];
-  rows.forEach((row,ri)=>{const x0=row.length<maxc?PX/2:0;row.forEach((pix,ci)=>{xs.push(x0+ci*PX);ys.push(ri*PY);tx.push(""+pix);});});
-  const cols=xs.map((_,i)=>i===11?"#6b3fd4":"#bdbdbd");
-  Plotly.react("c22-lay",[{x:xs,y:ys,mode:"markers+text",marker:{size:19,color:cols,line:{color:"#333",width:1}},text:tx,textfont:{size:9,color:"#fff"},textposition:"middle center",hoverinfo:"text"}],
-    L({showlegend:false,margin:{l:36,r:10,t:10,b:36},xaxis:{title:{text:"x (µm)"},zeroline:false},yaxis:{title:{text:"y (µm)"},scaleanchor:"x",zeroline:false}}),CFG);
+  const PX=23.0,PY=19.92,maxc=5,xs=[],ys=[];
+  rows.forEach((row,ri)=>{const x0=row.length<maxc?PX/2:0;row.forEach((pix,ci)=>{xs.push(x0+ci*PX);ys.push(ri*PY);});});
+  const cx=2*PX,cy=2*PY;                          // array center = pixel 11
+  function solveLin(A,b){const n=b.length;const M=A.map((r,i)=>r.concat([b[i]]));
+    for(let c=0;c<n;c++){let p=c;for(let r=c+1;r<n;r++)if(Math.abs(M[r][c])>Math.abs(M[p][c]))p=r;
+      const t=M[c];M[c]=M[p];M[p]=t;if(Math.abs(M[c][c])<1e-12)return null;
+      for(let r=c+1;r<n;r++){const f=M[r][c]/M[c][c];for(let j=c;j<=n;j++)M[r][j]-=f*M[c][j];}}
+    const x=new Array(n).fill(0);
+    for(let r=n-1;r>=0;r--){let s=M[r][n];for(let j=r+1;j<n;j++)s-=M[r][j]*x[j];x[r]=s/M[r][r];}
+    return x;}
+  function fit2d(z){                              // Gauss-Newton, lab p0 seed
+    const zmin=Math.min.apply(null,z),zmax=Math.max.apply(null,z);
+    let sw=0,sx0=0,sy0=0;for(let i=0;i<23;i++){const w=z[i]-zmin+1e-9;sw+=w;sx0+=xs[i]*w;sy0+=ys[i]*w;}
+    const p=[Math.max(zmax-zmin,1e-6),sx0/sw,sy0/sw,20,20,zmin];
+    for(let it=0;it<60;it++){
+      const A=Array.from({length:6},()=>new Array(6).fill(0)),g=new Array(6).fill(0);
+      for(let i=0;i<23;i++){
+        const dx=xs[i]-p[1],dy=ys[i]-p[2];
+        const E=Math.exp(-dx*dx/(2*p[3]*p[3])-dy*dy/(2*p[4]*p[4]));
+        const r=z[i]-(p[0]*E+p[5]);
+        const J=[E,p[0]*E*dx/(p[3]*p[3]),p[0]*E*dy/(p[4]*p[4]),
+                 p[0]*E*dx*dx/(p[3]*p[3]*p[3]),p[0]*E*dy*dy/(p[4]*p[4]*p[4]),1];
+        for(let a=0;a<6;a++){g[a]+=J[a]*r;for(let b2=0;b2<6;b2++)A[a][b2]+=J[a]*J[b2];}}
+      for(let a=0;a<6;a++)A[a][a]*=1.02;          // mild LM damping
+      const st=solveLin(A,g);if(!st)break;
+      let rel=0;for(let a=0;a<6;a++){p[a]+=st[a];rel=Math.max(rel,Math.abs(st[a])/(Math.abs(p[a])+1e-6));}
+      p[3]=Math.max(Math.abs(p[3]),3);p[4]=Math.max(Math.abs(p[4]),3);
+      if(rel<1e-7)break;}
+    return p;}
+  function g2(x,y,p){return p[0]*Math.exp(-(x-p[1])*(x-p[1])/(2*p[3]*p[3])-(y-p[2])*(y-p[2])/(2*p[4]*p[4]))+p[5];}
+  hook(["c22-ox","c22-oy"],function(){
+    const ox=+document.getElementById("c22-ox").value,oy=+document.getElementById("c22-oy").value;
+    sv("c22-ox-v",ox+" µm");sv("c22-oy-v",oy+" µm");
+    const rng=mulberry32(11);
+    const A0=1200,sxT=26,syT=24,off=40;
+    const z=xs.map((x,i)=>{const m=g2(x,ys[i],[A0,cx+ox,cy+oy,sxT,syT,off]);
+      return Math.max(Math.round(m+Math.sqrt(m)*randn(rng)),0);});
+    const p=fit2d(z);
+    const seq=Math.sqrt((p[3]*p[3]+p[4]*p[4])/2);
+    sv("c22-out","("+(p[1]-cx).toFixed(1)+", "+(p[2]-cy).toFixed(1)+") µm  (truth "+ox+", "+oy+")");
+    sv("c22-seq",seq.toFixed(1));
+    const sub={showlegend:false,margin:{l:46,r:8,t:26,b:40}};
+    Plotly.react("c22-arr",[{x:xs,y:ys,mode:"markers",
+      marker:{size:16,color:z,colorscale:"Viridis",colorbar:{title:{text:"counts"},thickness:9,len:0.85},line:{color:"#333",width:1}},
+      text:z.map((v,i)=>"px "+i+": "+v+" cts"),hoverinfo:"text"}],
+      L(Object.assign({title:{text:"measured counts on array",font:{size:12}},
+        xaxis:{title:{text:"x (µm)"},zeroline:false},yaxis:{title:{text:"y (µm)"},scaleanchor:"x",zeroline:false}},sub)),CFG);
+    const gx=linspace(-14,4*PX+14,60),gy=linspace(-14,4*PY+14,50);
+    const zz=gy.map(Y=>gx.map(X=>g2(X,Y,p)));
+    Plotly.react("c22-fit",[
+      {z:zz,x:gx,y:gy,type:"heatmap",colorscale:"Viridis",showscale:false},
+      {x:xs,y:ys,mode:"markers",marker:{size:5,color:"rgba(0,0,0,0)",line:{color:"#fff",width:1}},hoverinfo:"skip"},
+      {x:[p[1]],y:[p[2]],mode:"markers",marker:{symbol:"x",size:11,color:"#fff",line:{width:2}},hoverinfo:"skip"}],
+      L(Object.assign({title:{text:"2D fit: σx = "+p[3].toFixed(1)+", σy = "+p[4].toFixed(1)+" µm",font:{size:12}},
+        xaxis:{title:{text:"x (µm)"},zeroline:false},yaxis:{title:{text:"y (µm)"},scaleanchor:"x",zeroline:false}},sub)),CFG);
+    const rr=xs.map((x,i)=>Math.hypot(x-p[1],ys[i]-p[2]));
+    const rl=linspace(0,Math.max.apply(null,rr)*1.05,100);
+    Plotly.react("c22-rad",[
+      {x:rr,y:z,mode:"markers",marker:{size:6,color:"#2563eb"},name:"pixels"},
+      {x:rl,y:rl.map(r=>p[0]*Math.exp(-r*r/(2*seq*seq))+p[5]),mode:"lines",line:{color:"#dc2626",width:2},name:"Gaussian (σ_eq)"}],
+      L({margin:{l:46,r:8,t:26,b:40},title:{text:"radial profile from fitted center",font:{size:12}},
+        xaxis:{title:{text:"r (µm)"}},yaxis:{title:{text:"counts"}}}),CFG);
+  });
 })();}catch(e){console.error("2.2",e);}
 
 /* 2.3 */
