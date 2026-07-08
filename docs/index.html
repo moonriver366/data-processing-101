@@ -435,6 +435,7 @@ def k_space_angle_axis(n_px, lo, hi, NA):         <span class="code-cmt"># disk 
     <div class="controls">
       <div class="ctrl">spot offset x <input type="range" id="c22-ox" min="-25" max="25" step="1" value="9"><span class="val" id="c22-ox-v"></span></div>
       <div class="ctrl">spot offset y <input type="range" id="c22-oy" min="-20" max="20" step="1" value="6"><span class="val" id="c22-oy-v"></span></div>
+      <div class="ctrl">spot σ <input type="range" id="c22-s" min="8" max="50" step="1" value="25"><span class="val" id="c22-s-v"></span></div>
     </div>
     <div class="readout"><span>fitted center offset: <b id="c22-out"></b></span><span>σ_eq = <b id="c22-seq"></b> µm</span></div>
     <div class="prow3">
@@ -862,17 +863,18 @@ try{(function(){
       if(rel<1e-7)break;}
     return p;}
   function g2(x,y,p){return p[0]*Math.exp(-(x-p[1])*(x-p[1])/(2*p[3]*p[3])-(y-p[2])*(y-p[2])/(2*p[4]*p[4]))+p[5];}
-  hook(["c22-ox","c22-oy"],function(){
+  hook(["c22-ox","c22-oy","c22-s"],function(){
     const ox=+document.getElementById("c22-ox").value,oy=+document.getElementById("c22-oy").value;
-    sv("c22-ox-v",ox+" µm");sv("c22-oy-v",oy+" µm");
+    const sT=+document.getElementById("c22-s").value;
+    sv("c22-ox-v",ox+" µm");sv("c22-oy-v",oy+" µm");sv("c22-s-v",sT+" µm");
     const rng=mulberry32(11);
-    const A0=1200,sxT=26,syT=24,off=40;
+    const A0=1200,sxT=1.04*sT,syT=0.96*sT,off=40;
     const z=xs.map((x,i)=>{const m=g2(x,ys[i],[A0,cx+ox,cy+oy,sxT,syT,off]);
       return Math.max(Math.round(m+Math.sqrt(m)*randn(rng)),0);});
     const p=fit2d(z);
     const seq=Math.sqrt((p[3]*p[3]+p[4]*p[4])/2);
     sv("c22-out","("+(p[1]-cx).toFixed(1)+", "+(p[2]-cy).toFixed(1)+") µm  (truth "+ox+", "+oy+")");
-    sv("c22-seq",seq.toFixed(1));
+    sv("c22-seq",seq.toFixed(1)+" (truth "+Math.sqrt((sxT*sxT+syT*syT)/2).toFixed(1)+")");
     const sub={showlegend:false,margin:{l:46,r:8,t:26,b:40}};
     Plotly.react("c22-arr",[{x:xs,y:ys,mode:"markers",
       marker:{size:16,color:z,colorscale:"Viridis",colorbar:{title:{text:"counts"},thickness:9,len:0.85},line:{color:"#333",width:1}},
